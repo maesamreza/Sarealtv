@@ -21,7 +21,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('AdminOrClient')->group(function(){
-Route::post('update/client/profile',[ClientController::class,'updateProfile'])->name('client.update');
+Route::post('update/client/profile/{id?}',[ClientController::class,'updateProfile'])->name('client.update');
+Route::post('add/media/{clientId?}',[App\Http\Controllers\Sarealtv\ClientMediaController::class,'addMedia']);
+
 
 });
 Route::group( ['prefix' => 'client','middleware' => ['auth:client-api','scopes:client'] ],function(){
@@ -33,12 +35,13 @@ Route::post('client/login',[ClientController::class,'login'])->name('ClientLogin
 Route::post('client/register',[ClientController::class,'register'])->name('Clientreister');
 
 
-Route::post('admin/Login',[adminController::class,'adminLogin'])->name('adminLogin');
-Route::post('admin/register',[adminController::class,'adminregister'])->name('adminregister');
+Route::post('admin/login',[adminController::class,'login'])->name('adminLogin');
 
-Route::group( ['prefix' => 'admin','middleware' => ['auth:admin-api','scopes:admin'] ],function(){
+Route::group( ['prefix' => 'admin','middleware' => ['Admin'] ],function(){
     // authenticated staff routes here 
-    Route::get('get/user',[adminController::class,'getUserDetails']);
+
+     Route::post('/update/profile',[adminController::class,'updateProfile'])->name('adminregister');
+    Route::get('get/user',[adminController::class,'getMyDetails']);
     Route::get('dashboard',[adminController::class, 'adminDashboard']);
 });
 Route::post('adminlogout',[adminController::class,'adminlogout'])->name('adminlogout');

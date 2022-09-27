@@ -35,6 +35,7 @@ class ClientController extends Controller
             'firstName' => "required|string",
             'lastName'=>"required|string",
             'gender'=>'required|string|in:male,female',
+            'country'=>'required|string',
             'DOB'=>'required|date',
             'accepted'=>'required|in:1',
 
@@ -110,13 +111,26 @@ class ClientController extends Controller
 
 
 
-    public function updateProfile(Request $req)
+    public function updateProfile(Request $req,$id=false)
     {
         $user = Util::getUserDetail();
-        $userUpdate = Client::find($user->id);
-
+        /*if($user->role =='admin' && $id) {
+            $uid=$id;
+        }
+        else */
+$uid = $id;
+if ($user->role =='admin' && !$uid){
+    return response()->json(['status' => false, 'message' => 'Client Id Is required']);
     
+            }
+
+        if ($user->role =='client'){
+$uid = $user->id;
+        }
+
+
         $rules =[
+        
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
 
             'password' => [
@@ -134,11 +148,16 @@ class ClientController extends Controller
             'lastName'=>"required|string",
             'gender'=>'required|string|in:male,female',
             'DOB'=>'required|date',
+            'country'=>'required|string',
             'accepted'=>'required|in:1',
 
         ];
 
         $rules = array_intersect_key($rules,$req->all());
+
+        $rules['id']='required|integer|exists:clients,id';
+       
+        $userUpdate = Client::find($uid);
 
         if ($req->has('email') && $req->email != $userUpdate->email) $rules['email'] = 'required|email|unique:clients,email';
 
@@ -159,19 +178,21 @@ class ClientController extends Controller
         }
 
 
-        $valid = Validator::make($req->all(), $rules);
+        $valid = Validator::make(array_merge($req->all(),['id'=>$uid]), $rules);
 
         if ($valid->fails()) {
 
             return response()->json(['status' => false, 'message' => 'Input Validation Errors', "inputErrors" => $valid->errors()], 500);
         }
 
+
         $data = [];
         if($req->has('firstName') && $req->has('lastName')) $data['name'] = $req->firstName.''.$req->lastName;
         if ($req->has('email'))  $data['email'] = $req->email;
         if ($req->has('password')) $data['password'] = Hash::make($req->password);
         $profile =[];
-        if ($req->has('DOB'))  $profile['DOB'] = $req->DOB;
+        if ($req->has('DOB')) $profile['DOB']=date('Y-m-d H:i:s' ,strtotime($req->DOB));
+        if ($req->has('country')) $profile['country']=$req->country;
         if ($req->has('gender'))  $profile['gender'] = $req->gender;
 
 
@@ -198,9 +219,7 @@ class ClientController extends Controller
             }
         }
 
-
-
-        if ($user->tokenCan('client') && $userUpdate->update($data)) {
+        if ($userUpdate->update($data) && (sizeof($profile) && $userUpdate->clientProfile()->first()) ? $userUpdate->clientProfile()->update($profile):true) {
 
             return response()->json(['status' =>true, 'message' => 'Your profile Updated successfully'], 200);
         } else {

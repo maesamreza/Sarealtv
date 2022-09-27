@@ -13,14 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('client_profiles', function (Blueprint $table) {
+        Schema::create('client_media', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('client_id');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
-            $table->enum('gender',['male','female']);
-            $table->dateTime('DOB');
-            $table->string('country');
-            $table->enum('account_type',['Private','Public'])->default('Public');
+            $table->string('title');
+            $table->string('des')->nullable();
+            $table->string('url');
             $table->timestamps();
         });
     }
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('client_profiles');
+        Schema::dropIfExists('client_media');
     }
 };

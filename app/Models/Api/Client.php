@@ -23,4 +23,9 @@ protected $fillable = [
 
         return $this->hasOne(\App\Models\ClientProfile::class);
     }
+
+    public function media(){
+
+        return $this->hasMany(\App\Models\ClientMedia::class);
+    }
 }

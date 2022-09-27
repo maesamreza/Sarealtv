@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClientProfile extends Model
+class ClientMedia extends Model
 {
-    protected $fillable =['gender','DOB','country'];
     use HasFactory;
+
+    protected $fillable =['title','des','url'];
+    
 }

@@ -17,6 +17,7 @@ class AdminController extends Controller
 
 {
 public function login(Request $req){
+    
     $messages = array(
         "email.exists" => "EmailNotValid",
     );
