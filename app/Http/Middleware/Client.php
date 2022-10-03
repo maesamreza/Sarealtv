@@ -15,7 +15,7 @@ class Client
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next)
-    {  if(auth()->guard('client_details')->check()){
+    {  if(auth()->guard('client_details')->check()  && auth()->guard('client_details')->user()->tokenCan('client')){
         return $next($request);}
         else{
 

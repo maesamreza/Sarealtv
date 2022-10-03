@@ -16,7 +16,7 @@ class AdminOrClient
      */
     public function handle(Request $request, Closure $next)
     {
-        if(auth()->guard('admin_details')->check() || auth()->guard('client_details')->check()){
+        if(auth()->guard('admin_details')->check() && auth()->guard('admin_details')->user()->tokenCan('admin') || auth()->guard('client_details')->check()  && auth()->guard('client_details')->user()->tokenCan('client')){
         return $next($request);}
         else{
 

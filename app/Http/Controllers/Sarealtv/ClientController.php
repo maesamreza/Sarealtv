@@ -132,6 +132,7 @@ $uid = $user->id;
         $rules =[
         
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
 
             'password' => [
                 'required',
@@ -194,6 +195,7 @@ $uid = $user->id;
         if ($req->has('DOB')) $profile['DOB']=date('Y-m-d H:i:s' ,strtotime($req->DOB));
         if ($req->has('country')) $profile['country']=$req->country;
         if ($req->has('gender'))  $profile['gender'] = $req->gender;
+       // if ($req->has('banner'))  $profile['banner'] = $bannerPath;
 
 
 
@@ -203,9 +205,9 @@ $uid = $user->id;
         if ($req->picture != null) {
 
 
-            if ($user != null && $user->picture != null) {
+            if ($user != null && $user->clientProfile->picture != null) {
 
-                $path = str_replace($req->getSchemeAndHttpHost(), '', $user->picture);
+                $path = str_replace($req->getSchemeAndHttpHost(), '', $user->clientProfile->picture);
 
                 if (File::exists(public_path($path))) {
 
@@ -215,9 +217,30 @@ $uid = $user->id;
 
             $name = uniqid() . "." . $req->picture->extension();
             if ($req->picture->move(public_path('admin/docs/images'), $name)) {
-                $data['picture'] = url('admin/docs/images', $name);
+                $profile['picture'] = url('admin/docs/images', $name);
             }
         }
+
+
+        if ($req->banner != null) {
+
+
+            if ($user != null && $user->clientProfile->banner != null) {
+
+                $path = str_replace($req->getSchemeAndHttpHost(), '', $user->clientProfile->banner);
+
+                if (File::exists(public_path($path))) {
+
+                    File::delete(public_path($path));
+                }
+            }
+
+            $name = uniqid() . "." . $req->banner->extension();
+            if ($req->banner->move(public_path('admin/docs/images'), $name)) {
+                $profile['banner'] = url('admin/docs/images', $name);
+            }
+        }
+
 
         if ($userUpdate->update($data) && (sizeof($profile) && $userUpdate->clientProfile()->first()) ? $userUpdate->clientProfile()->update($profile):true) {
 

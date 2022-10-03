@@ -15,7 +15,7 @@ class Admin
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next)
-    {     if(auth()->guard('admin_details')->check()){
+    {     if(auth()->guard('admin_details')->check() && auth()->guard('admin_details')->user()->tokenCan('admin')){
         return $next($request);}
         else{
 

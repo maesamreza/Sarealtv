@@ -17,6 +17,10 @@ protected $fillable = [
         'password','picture'
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
     use HasApiTokens,HasFactory;
 
     public function clientProfile(){

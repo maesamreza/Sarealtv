@@ -202,7 +202,7 @@ else{
 
 public function getMyDetails(){
 
-return Util::getUserDetail();
+return Util::getUserDetail()->load('clientProfile');
 
 }
 

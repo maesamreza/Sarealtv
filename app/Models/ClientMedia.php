@@ -9,6 +9,11 @@ class ClientMedia extends Model
 {
     use HasFactory;
 
-    protected $fillable =['title','des','url'];
-    
+    protected $fillable = [
+        'title',
+        'des',
+        'url',
+        'duration',
+        'type'
+    ];
 }

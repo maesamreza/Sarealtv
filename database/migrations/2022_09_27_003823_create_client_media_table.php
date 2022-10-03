@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('title');
             $table->string('des')->nullable();
             $table->string('url');
+            $table->integer('duration')->nullable();
+            $table->enum('type',['image','video'])->default('image');
             $table->timestamps();
         });
     }
