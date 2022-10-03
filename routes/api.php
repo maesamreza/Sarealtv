@@ -24,6 +24,7 @@ Route::middleware('AdminOrClient')->group(function(){
 Route::get('/user',[adminController::class,'getMyDetails']);
 Route::post('update/client/profile/{id?}',[ClientController::class,'updateProfile'])->name('client.update');
 Route::post('add/media/{clientId?}',[App\Http\Controllers\Sarealtv\ClientMediaController::class,'addMedia']);
+Route::get('get/media/{fileURL?}',[App\Http\Controllers\Sarealtv\ClientMediaController::class,'getFileByUrl']);
 });
 Route::group( ['prefix' => 'client','middleware' => ['auth:client-api','scopes:client'] ],function(){
     // authenticated staff routes here 

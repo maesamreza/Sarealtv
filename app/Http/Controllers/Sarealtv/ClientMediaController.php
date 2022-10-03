@@ -89,6 +89,11 @@ class ClientMediaController extends Controller
 
 
     public function getFileByUrl($file){
-        $fid =substr($file,0,strpos($file,'_'));
-        return $fid;}
+        $fid =hex2bin(substr($file,0,strpos($file,'_')));
+        $ClientIdCheck =str_replace('f','',$fid);
+        
+        $filePath = storage_path("app/client/media/$fid/$file");
+        return response()->download($filePath,str_replace('_','',$file));
+        return $fid;
+    }
 }
