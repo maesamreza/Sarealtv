@@ -89,6 +89,27 @@ class ClientMediaController extends Controller
 
 
     public function getFileByUrl($file){
-        $fid =substr($file,0,strpos($file,'_'));
-        return $fid;}
+        $fid =hex2bin(substr($file,0,strpos($file,'_')));
+        $ClientIdCheck =str_replace('f','',$fid);
+        
+        $filePath = storage_path("app/client/media/$fid/$file");
+        return response()->download($filePath,str_replace('_','',$file));
+        return $fid;
+    }
+
+    public function fetchAllMedia($clientId=false){
+        $user = Util::getUserDetail();
+
+    $clientId =($user->role =="client")?$user->id:$clientId;
+
+ $checkValid = Validator::make(['id'=>$clientId],['id'=>'required|integer|exists:clients,id']);
+ if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid']);
+
+ $client = Client::find($clientId);
+ $clientMedia = $client->media()->get();
+ return $clientMedia;
+
+
+    }
+
 }
