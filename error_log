@@ -1,0 +1,5 @@
+[03-Oct-2022 14:56:27 UTC] PHP Warning:  require(/home/irfan/public_html/sarealtvapi/vendor/autoload.php): Failed to open stream: No such file or directory in /home/irfan/public_html/sarealtvapi/artisan on line 18
+[03-Oct-2022 14:56:27 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/irfan/public_html/sarealtvapi/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php80/root/usr/share/pear') in /home/irfan/public_html/sarealtvapi/artisan:18
+Stack trace:
+#0 {main}
+  thrown in /home/irfan/public_html/sarealtvapi/artisan on line 18
