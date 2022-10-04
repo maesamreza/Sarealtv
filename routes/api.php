@@ -20,28 +20,29 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::middleware('AdminOrClient')->group(function(){
-Route::get('/user',[adminController::class,'getMyDetails']);
-Route::post('update/client/profile/{id?}',[ClientController::class,'updateProfile'])->name('client.update');
-Route::post('add/media/{clientId?}',[App\Http\Controllers\Sarealtv\ClientMediaController::class,'addMedia']);
-Route::get('get/media/{fileURL?}',[App\Http\Controllers\Sarealtv\ClientMediaController::class,'getFileByUrl']);
+Route::middleware('AdminOrClient')->group(function () {
+    Route::get('/user', [adminController::class, 'getMyDetails']);
+    Route::post('update/client/profile/{id?}', [ClientController::class, 'updateProfile'])->name('client.update');
+    Route::post('add/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'addMedia']);
+    Route::get('get/media/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
+    Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMedia']);
 });
-Route::group( ['prefix' => 'client','middleware' => ['auth:client-api','scopes:client'] ],function(){
+Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
     // authenticated staff routes here 
-    Route::get('dashboard',[ClientController::class, 'ClientDashboard']);
+    Route::get('dashboard', [ClientController::class, 'ClientDashboard']);
 });
 
-Route::post('client/login',[ClientController::class,'login'])->name('ClientLogin');
-Route::post('client/register',[ClientController::class,'register'])->name('Clientreister');
+Route::post('client/login', [ClientController::class, 'login'])->name('ClientLogin');
+Route::post('client/register', [ClientController::class, 'register'])->name('Clientreister');
 
 
-Route::post('admin/login',[adminController::class,'login'])->name('adminLogin');
+Route::post('admin/login', [adminController::class, 'login'])->name('adminLogin');
 
-Route::group( ['prefix' => 'admin','middleware' => ['Admin'] ],function(){
+Route::group(['prefix' => 'admin', 'middleware' => ['Admin']], function () {
     // authenticated staff routes here 
 
-    Route::post('/update/profile',[adminController::class,'updateProfile'])->name('adminregister');
-    Route::get('dashboard',[adminController::class, 'adminDashboard']);
+    Route::post('/update/profile', [adminController::class, 'updateProfile'])->name('adminregister');
+    Route::get('dashboard', [adminController::class, 'adminDashboard']);
 });
 
-Route::post('adminlogout',[adminController::class,'adminlogout'])->name('adminlogout');
+Route::post('adminlogout', [adminController::class, 'adminlogout'])->name('adminlogout');
