@@ -93,8 +93,10 @@ class ClientMediaController extends Controller
         $ClientIdCheck =str_replace('f','',$fid);
         
         $filePath = storage_path("app/client/media/$fid/$file");
-        return response()->download($filePath,str_replace('_','',$file));
-        return $fid;
+        return response()->file($filePath);
+
+        // return response()->download($filePath,str_replace('_','',$file));
+        // return $fid;
     }
 
     public function fetchAllMedia($clientId=false){
@@ -108,8 +110,6 @@ class ClientMediaController extends Controller
  $client = Client::find($clientId);
  $clientMedia = $client->media()->get();
  return $clientMedia;
-
-
     }
 
 }
