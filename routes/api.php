@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('AdminOrClient')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+Route::get('get/file/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
 
 Route::middleware('AdminOrClient')->group(function () {
     Route::get('/user', [adminController::class, 'getMyDetails']);

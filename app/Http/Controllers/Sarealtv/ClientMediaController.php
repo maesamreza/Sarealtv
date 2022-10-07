@@ -58,7 +58,7 @@ class ClientMediaController extends Controller
 
         if ($checkValid->fails()) {
 
-            return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $checkValid->errors()]);
+            return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $checkValid->errors()],422);
         }
 
         if ($req->hasFile('media')) {
@@ -73,15 +73,16 @@ class ClientMediaController extends Controller
             //     return $error;
             //     return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $error]);
             // }
-            $fid="f".$this->user->id;
+           $fid="f".$this->user->id;
             $data['url'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
-            $file->storeAs("client/media/$fid",$data['url']);
+            $file->storeAs("public/media/",$data['url']);
+            $data['url']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['url'];
         }
 
         try {
             $media = $client->media()->create($data);
 
-            return response()->json(['status' => false, 'message' => 'Media Added!']);
+            return response()->json(['status' =>true, 'message' => 'Media Added!']);
         } catch (\illuminate\Database\QueryException $e) {
             return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
         }
@@ -92,9 +93,14 @@ class ClientMediaController extends Controller
         $fid =hex2bin(substr($file,0,strpos($file,'_')));
         $ClientIdCheck =str_replace('f','',$fid);
         
+<<<<<<< HEAD
         $filePath = storage_path("app/client/media/$fid/$file");
         return response()->file($filePath);
 
+=======
+        $filePath = storage_path("app/client/media/$file");
+        return response()->file($filePath);
+>>>>>>> 8c2497ba4176403fcd106afd32a26f7aeaf70c34
         // return response()->download($filePath,str_replace('_','',$file));
         // return $fid;
     }
