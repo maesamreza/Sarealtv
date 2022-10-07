@@ -23,7 +23,7 @@ class Util
       if ($user != null && $user->tokenCan($role)) {
         $user->role = $role;
         break;
-      }
+         }
     }
 
     if ($user->role == 'client') {
@@ -31,7 +31,8 @@ class Util
           'likes' => 0,
           'followers' =>0,
           'media' =>0,
-          'favorate' => 0
+          'favorate' => 0,
+          //'mediaBasePath'=>request()->getSchemeAndHttpHost().'/media/f'.$user->id
       ];
   }
     return $user;
