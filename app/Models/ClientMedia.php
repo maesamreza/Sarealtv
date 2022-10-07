@@ -16,4 +16,13 @@ class ClientMedia extends Model
         'duration',
         'type'
     ];
+
+    public function likes(){
+        return $this->hasMany(MediaLike::class);
+    }
+
+    public function comments(){
+        return $this->hasMany(MediaComments::class);
+    }
+    
 }
