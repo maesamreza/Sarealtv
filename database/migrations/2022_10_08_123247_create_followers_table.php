@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('comments_replays', function (Blueprint $table) {
-            $table->id();
+        Schema::create('client_follower', function (Blueprint $table) {
+            //$table->id();
             $table->unsignedBigInteger('client_id');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
-            $table->unsignedBigInteger('media_comments_id');
-            $table->foreign('media_comments_id')->references('id')->on('media_comments')->onDelete('cascade');
-            $table->text('comments');
+            $table->unsignedBigInteger('follower_id');
+            $table->foreign('follower_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->unique(['client_id','follower_id']);
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('comments_replays');
+        Schema::dropIfExists('client_follower');
     }
 };

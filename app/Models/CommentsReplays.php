@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class CommentsReplays extends Model
 {
     use HasFactory;
+
+    protected $fillable =['client_id','comments'];
+
+    protected $hidden = [ 
+        'created_at',
+        'updated_at'
+    ];
 }

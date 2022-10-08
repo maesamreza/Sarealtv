@@ -68,18 +68,24 @@ class MediaComments extends Controller
     public function fetchComments($mediaId){
 
         $user = Util::getUserDetail();
-        $rules = ['id'=>'required|integer|exists:media_comments,id,client_media_id'];
+        $rules = ['id'=>'required|integer|exists:media_comments,client_media_id'];
        
         $checkInputs = Validator::make(['id'=>$mediaId],$rules);
         
         if($checkInputs->fails())
         { return response()->json(['status'=>false,
-                    'message'=>'Param ID Not Valid!'],422);
+                    'message'=>'Param ID Not Valid!  Or Your Unauthourized'],422);
         }
 
         try{
 
-      $comments = Comment::where('client_media_id',$mediaId)->get();
+      $comments = Comment::select("media_comments.id",
+      "client_id",
+      "client_media_id",
+      "comments",'clients.name as comment_of')
+      ->join('clients', 'media_comments.client_id', 'clients.id')
+     ->where('client_media_id',$mediaId)->get();
+
       return response()->json(['status'=>true,
       'message'=>'Comments List On this Media','comments'=>$comments]);
 
