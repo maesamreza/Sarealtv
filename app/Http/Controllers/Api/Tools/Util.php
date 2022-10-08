@@ -27,13 +27,7 @@ class Util
     }
 
     if ($user->role == 'client') {
-      $user->CurrentStatus = [
-          'likes' => 0,
-          'followers' =>0,
-          'media' =>0,
-          'favorate' => 0,
-          //'mediaBasePath'=>request()->getSchemeAndHttpHost().'/media/f'.$user->id
-      ];
+      $user->CurrentStatus = $user->currentStatus();
   }
     return $user;
   }
