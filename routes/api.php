@@ -40,6 +40,8 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('media/get/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'fetchCommentReplays']);
    
     Route::post('follow/{clientId}',[App\Http\Controllers\Sarealtv\Followers::class,'follow']);
+    Route::post('unfollow/{clientId}',[App\Http\Controllers\Sarealtv\Followers::class,'unFollow']);
+    
     // Route::delete('media/remove/comment/replay/{id}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'removeCommentReplay']);
     // Route::get('media/get/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'fetchCommentReplays']);
    
