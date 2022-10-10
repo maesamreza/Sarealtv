@@ -12,10 +12,10 @@ class Client extends Authenticatable
 {
 
     //protected $withCount = ['comments','likes'];
-protected $fillable = [
+    protected $fillable = [
         'name',
         'email',
-        'password','picture'
+        'password', 'picture'
     ];
 
     protected $hidden = [
@@ -25,46 +25,60 @@ protected $fillable = [
         "password",
         "remember_token"
     ];
-    use HasApiTokens,HasFactory;
+    use HasApiTokens, HasFactory;
 
-    public function clientProfile(){
+    public function clientProfile()
+    {
 
         return $this->hasOne(\App\Models\ClientProfile::class);
     }
 
-    public function media(){
+    public function media()
+    {
 
         return $this->hasMany(\App\Models\ClientMedia::class);
     }
 
-    public function likes(){
+    public function likes()
+    {
 
         return $this->hasMany(\App\Models\MediaLike::class);
-
     }
 
-    public function comments(){
+    public function comments()
+    {
 
         return $this->hasMany(\App\Models\MediaComments::class);
-
     }
-public function currentStatus(){
-if(strchr(request()->path(),"api/user"))
-{
-return ['likes'=>$this->likes()->count(),
-        'comments'=>$this->comments()->count()];
-}else{
+    public function currentStatus()
+    {
+        if (strchr(request()->path(), "api/user")) {
+            return [
+                'likes' => $this->likes()->count(),
+                'comments' => $this->comments()->count(),
+                'followers' => $this->followers()->count()
+            ];
+        } else {
 
-    return null;
-}
+            return null;
+        }
+    }
 
-} 
 
+    public function followers()
+    {
 
-public function followers(){
+        return $this->belongsToMany(\App\Models\Follower::class);
+    }
 
- return $this->belongsToMany(\App\Models\Follower::class);
+    public function following()
+    {
 
-}
-
+        return $this->belongsToMany(
+            \App\Models\Follower::class,
+            'client_follower',
+            'follower_id',
+            'client_id'
+        );
+    }
 }

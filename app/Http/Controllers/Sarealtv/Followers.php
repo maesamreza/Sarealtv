@@ -79,4 +79,67 @@ class Followers extends Controller
             return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
         }
     }
+
+
+    public function followers($clientId=false){
+        $user = Util::getUserDetail();
+
+        $clientId =($user->role ==='admin')?$clientId:$user->id;
+        $rules = ['id' => 'required|integer|exists:clients,id'];
+
+        $checkInputs = Validator::make(['id' => $clientId], $rules);
+
+        if ($checkInputs->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Param ID Not Valid!'
+            ], 422);
+        }
+
+     try{ $followers = $user->followers()->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'List of Your Followers!',
+            'followers'=>$followers
+        ]);
+
+    }
+    catch (\illuminate\Database\QueryException $e) {
+
+        return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+    }
+}
+
+
+
+public function following($clientId=false){
+    $user = Util::getUserDetail();
+
+    $clientId =($user->role ==='admin')?$clientId:$user->id;
+
+    $rules = ['id' => 'required|integer|exists:clients,id'];
+
+    $checkInputs = Validator::make(['id' => $clientId], $rules);
+
+    if ($checkInputs->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Param ID Not Valid!'
+        ], 422);
+    }
+
+ try{ $followers = $user->following()->get();
+    return response()->json([
+        'status' => true,
+        'message' => 'List of You Following!',
+        'followers'=>$followers
+    ]);
+
+}
+catch (\illuminate\Database\QueryException $e) {
+
+    return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+}
+}
+
 }
