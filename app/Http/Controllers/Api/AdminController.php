@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Tools\Util;
+use App\Models\Api\Client;
 use Validator;
 use DB;
 use Carbon\Carbon;
@@ -16,106 +17,106 @@ use App\Models\User;
 class AdminController extends Controller
 
 {
-public function login(Request $req){
-    
-    $messages = array(
-        "email.exists" => "EmailNotValid",
-    );
-    $valid = Validator::make($req->all(), ['email' => 'required|email|exists:users,email', 'password' => 'required|string|min:8'], $messages);
+    public function login(Request $req)
+    {
 
-    if ($valid->fails()) {
+        $messages = array(
+            "email.exists" => "EmailNotValid",
+        );
+        $valid = Validator::make($req->all(), ['email' => 'required|email|exists:users,email', 'password' => 'required|string|min:8'], $messages);
 
-        $errors = $valid->errors();
-        if ($errors->has('email') && $errors->first('email') == "EmailNotValid") {
+        if ($valid->fails()) {
 
-            return response()->json(['status' => false, 'message' => 'Credentials Errors'], 500);
+            $errors = $valid->errors();
+            if ($errors->has('email') && $errors->first('email') == "EmailNotValid") {
+
+                return response()->json(['status' => false, 'message' => 'Credentials Errors'], 500);
+            }
+
+            return response()->json(['status' => false, 'message' => 'Input Validation Errors', "errors" => $errors]);
         }
 
-        return response()->json(['status' => false, 'message' => 'Input Validation Errors', "errors" => $errors]);
+
+        if (auth()->guard('admin')->attempt(['email' => $req->email, 'password' => $req->password]) && $token = auth()->guard('admin')->user()->createToken('uu4f3b5e03853b', ['admin'])->accessToken) {
+            $user = auth()->guard('admin')->user();
+            return response()->json(['status' => true, 'message' => 'Login successfully', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'admin', 'email' => $user->email]], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => 'Credentials Errors'], 500);
+        }
     }
 
 
-    if (auth()->guard('admin')->attempt(['email' => $req->email, 'password' => $req->password]) && $token = auth()->guard('admin')->user()->createToken('uu4f3b5e03853b',['admin'])->accessToken) {
-        $user = auth()->guard('admin')->user();
-        return response()->json(['status' => true, 'message' => 'Login successfully', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' =>'admin', 'email' => $user->email]], 200);
-    } else {
-        return response()->json(['status' => false, 'message' => 'Credentials Errors'], 500);
-    }
 
-   }
+    public function updateProfile(Request $req)
+    {
 
+        $user = Util::getUserDetail();
+        $userUpdate = User::find($user->id);
 
+        $rules = [
+            'name' => 'required|string|min:4',
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024'
+        ];
 
-   public function updateProfile(Request $req)
-   {
+        if ($req->has('email') && $req->email != $userUpdate->email) $rules['email'] = 'required|email|unique:users,email';
 
-           $user = Util::getUserDetail();
-           $userUpdate =User::find($user->id);
-
-           $rules= [
-         'name' => 'required|string|min:4',
-           'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024'];
-
-           if($req->has('email') && $req->email != $userUpdate->email) $rules['email'] = 'required|email|unique:users,email';
-
-           if($req->has('password')){
-               $rules = array_merge($rules,['password' => 'required|string|min:8',
-               'passwordConfirmation' => 'required|same:password']);
-           }
+        if ($req->has('password')) {
+            $rules = array_merge($rules, [
+                'password' => 'required|string|min:8',
+                'passwordConfirmation' => 'required|same:password'
+            ]);
+        }
 
 
-       $valid = Validator::make($req->all(),$rules);
+        $valid = Validator::make($req->all(), $rules);
 
-       if ($valid->fails()) {
+        if ($valid->fails()) {
 
-           return response()->json(['status' => false, 'message' => 'Input Validation Errors', "inputErrors" => $valid->errors()],500);
-       }
+            return response()->json(['status' => false, 'message' => 'Input Validation Errors', "inputErrors" => $valid->errors()], 500);
+        }
 
-       $data = ['name' => $req->name];
-       if($req->has('email'))  $data['email'] = $req->email;
-       if($req->has('password')) $data['password'] = Hash::make($req->password);
+        $data = ['name' => $req->name];
+        if ($req->has('email'))  $data['email'] = $req->email;
+        if ($req->has('password')) $data['password'] = Hash::make($req->password);
 
-       if($req->picture !=null){
+        if ($req->picture != null) {
 
 
-           if ($user != null && $user->picture != null) {
+            if ($user != null && $user->picture != null) {
 
-               $path = str_replace($req->getSchemeAndHttpHost(), '', $user->picture);
+                $path = str_replace($req->getSchemeAndHttpHost(), '', $user->picture);
 
-               if (File::exists(public_path($path))) {
+                if (File::exists(public_path($path))) {
 
-                   File::delete(public_path($path));
-               }
-           }
-
-           $name = uniqid().".".$req->picture->extension();
-           if($req->picture->move(public_path('admin/docs/images'),$name))
-           {
-               $data['picture'] = url('admin/docs/images',$name);
-           }
-
+                    File::delete(public_path($path));
                 }
+            }
+
+            $name = uniqid() . "." . $req->picture->extension();
+            if ($req->picture->move(public_path('admin/docs/images'), $name)) {
+                $data['picture'] = url('admin/docs/images', $name);
+            }
+        }
 
 
 
-       if ($user->tokenCan('admin') && $userUpdate->update($data)) {
+        if ($user->tokenCan('admin') && $userUpdate->update($data)) {
 
-               return response()->json(['status' =>true, 'message' => 'Your profile Updated successfully'], 200);
+            return response()->json(['status' => true, 'message' => 'Your profile Updated successfully'], 200);
+        } else {
 
-       } else {
-
-           return response()->json(['status' => false, 'message' => 'Server Error Can\'t Update Your profile'], 500);
-       }
-   }
+            return response()->json(['status' => false, 'message' => 'Server Error Can\'t Update Your profile'], 500);
+        }
+    }
 
 
 
     public function forgetPassword(Request $request)
     {
 
-        $type = ['admin'=>'users','client'=>'clients'][request()->type];
+        $type = ['admin' => 'users', 'client' => 'clients'][request()->type];
         $valid = Validator::make($request->all(), [
-            'email' => 'required|email|exists:'.$type,
+            'email' => 'required|email|exists:' . $type,
         ]);
         if ($valid->fails())
             return response(['message' => 'Validation Error', 'error' => $valid->errors()->all()]);
@@ -145,11 +146,11 @@ public function login(Request $req){
     public function resetPassword(Request $request)
     {
 
-        $type = ['admin'=>'users','client'=>'clients'][request()->type];
+        $type = ['admin' => 'users', 'client' => 'clients'][request()->type];
 
         $valid = Validator::make($request->all(), [
             'token' => 'required|string|exists:password_resets,token',
-            'email' => 'required|email|exists:'.$type,
+            'email' => 'required|email|exists:' . $type,
             'password' => 'required|string|min:8',
             'passwordconfirmation' => 'required|same:password'
         ]);
@@ -170,14 +171,12 @@ public function login(Request $req){
         }
 
         $user =  self::checkModelForReset($type, $request->email);
-        if($user->update(['password' => Hash::make($request->password)]) && DB::table('password_resets')->where(['email' => $request->email])->delete())
-        {
+        if ($user->update(['password' => Hash::make($request->password)]) && DB::table('password_resets')->where(['email' => $request->email])->delete()) {
 
-            return response(['status'=>true,'message'=>'Your password has been changed!'], 200);
+            return response(['status' => true, 'message' => 'Your password has been changed!'], 200);
+        } else {
+            return response(['satus' => false, 'message' => 'Unable to reset Password!'], 500);
         }
-else{
-        return response(['satus'=>false,'message' => 'Unable to reset Password!'], 500);
-}
     }
 
 
@@ -193,25 +192,33 @@ else{
             case "clients":
                 $user = \App\Models\Client::where('email', $email);
                 break;
-
         }
 
         return $user;
     }
 
 
-public function getMyDetails(){
+    public function getMyDetails()
+    {
 
-return Util::getUserDetail()->load('clientProfile');
+        return Util::getUserDetail()->load('clientProfile');
+    }
 
+
+    public function getMyDetailsById($id)
+    {
+
+        $checkValid = Validator::make(['id' => $id], ['id' => 'required|integer|exists:clients,id']);
+        if ($checkValid->fails())
+            return response(['status' => false, 'message' => 'Profile ID is Not Valid ']);
+
+        $clientData = Client::find($id)->load('clientProfile');
+        $clientData->CurrentStatus = $clientData->currentStatus();
+
+        return response([
+            'status' => true,
+            'message' => $clientData->name . " Profile Details and Media",
+            'user' => $clientData
+        ]);
+    }
 }
-
-
-
-
-
-
-
-
-}
-

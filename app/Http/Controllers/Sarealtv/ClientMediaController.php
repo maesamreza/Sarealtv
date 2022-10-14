@@ -93,14 +93,8 @@ class ClientMediaController extends Controller
         $fid =hex2bin(substr($file,0,strpos($file,'_')));
         $ClientIdCheck =str_replace('f','',$fid);
         
-<<<<<<< HEAD
-        $filePath = storage_path("app/client/media/$fid/$file");
-        return response()->file($filePath);
-
-=======
         $filePath = storage_path("app/client/media/$file");
         return response()->file($filePath);
->>>>>>> 8c2497ba4176403fcd106afd32a26f7aeaf70c34
         // return response()->download($filePath,str_replace('_','',$file));
         // return $fid;
     }
@@ -108,7 +102,7 @@ class ClientMediaController extends Controller
     public function fetchAllMedia($clientId=false){
         $user = Util::getUserDetail();
 
-    $clientId =($user->role =="client")?$user->id:$clientId;
+    $clientId =($user != null && $user->role =="client")?$user->id:$clientId;
 
  $checkValid = Validator::make(['id'=>$clientId],['id'=>'required|integer|exists:clients,id']);
  if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid']);

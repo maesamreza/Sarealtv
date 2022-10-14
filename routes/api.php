@@ -19,21 +19,22 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('AdminOrClient')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
-Route::get('get/file/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
+//Route::get('get/file/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
+Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMedia']);
+Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
+Route::get('media/get/comments/{mediaId}',[App\Http\Controllers\Sarealtv\MediaComments::class,'fetchComments']);
 
 Route::middleware('AdminOrClient')->group(function () {
     Route::get('/user', [adminController::class, 'getMyDetails']);
     Route::post('update/client/profile/{id?}', [ClientController::class, 'updateProfile'])->name('client.update');
     Route::post('add/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'addMedia']);
     Route::get('get/media/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
-    Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMedia']);
    
     Route::get('media/like/{mediaId}',[App\Http\Controllers\Sarealtv\MediaLikes::class,'like']);
     Route::get('media/count/like/{mediaId}',[App\Http\Controllers\Sarealtv\MediaLikes::class,'getLikes']);
    
     Route::post('media/add/comments/{mediaId}',[App\Http\Controllers\Sarealtv\MediaComments::class,'addComment']);
     Route::delete('media/remove/comments/{id}',[App\Http\Controllers\Sarealtv\MediaComments::class,'removeComment']);
-    Route::get('media/get/comments/{mediaId}',[App\Http\Controllers\Sarealtv\MediaComments::class,'fetchComments']);
    
     Route::post('media/add/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'addCommentReplay']);
     Route::delete('media/remove/comment/replay/{id}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'removeCommentReplay']);
