@@ -26,7 +26,7 @@ class Util
          }
     }
 
-    if ($user->role == 'client') {
+    if ($user != null && $user->role == 'client') {
       $user->CurrentStatus = $user->currentStatus();
   }
     return $user;
