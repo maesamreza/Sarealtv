@@ -80,9 +80,11 @@ class MediaComments extends Controller
         try{
 
       $comments = Comment::select("media_comments.id",
-      "client_id",
+      "media_comments.client_id",
       "client_media_id",
-      "comments",'clients.name as comment_of')
+      "comments",'clients.name as comment_of',
+      'client_profiles.picture','client_profiles.gender','client_profiles.account_type')
+      ->join('client_profiles','media_comments.client_id','client_profiles.client_id')
       ->join('clients', 'media_comments.client_id', 'clients.id')
      ->where('client_media_id',$mediaId)->get();
 

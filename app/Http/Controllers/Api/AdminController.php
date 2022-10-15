@@ -208,12 +208,19 @@ class AdminController extends Controller
     public function getMyDetailsById($id)
     {
 
+        $user= Util::getUserDetail();
+    
         $checkValid = Validator::make(['id' => $id], ['id' => 'required|integer|exists:clients,id']);
         if ($checkValid->fails())
             return response(['status' => false, 'message' => 'Profile ID is Not Valid ']);
 
         $clientData = Client::find($id)->load('clientProfile');
         $clientData->CurrentStatus = $clientData->currentStatus();
+        if($user !=null){
+           $clientData->is_following = $clientData->followers()->where('id',$user->id)->exists();
+           $clientData->is_follower = $clientData->following()->where('id',$user->id)->exists();
+        }
+
 
         return response([
             'status' => true,

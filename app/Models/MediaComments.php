@@ -19,7 +19,9 @@ class MediaComments extends Model
 
     public function commentsReplays(){
         return $this->hasMany(CommentsReplays::class)
-        ->select('comments_replays.*','clients.name as replay_of')
+        ->select('comments_replays.*','clients.name as replay_of',
+        'client_profiles.picture','client_profiles.gender','client_profiles.account_type')
+        ->join('client_profiles','comments_replays.client_id','client_profiles.client_id')
         ->join('clients', 'comments_replays.client_id', 'clients.id');
     }
 }
