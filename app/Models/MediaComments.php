@@ -21,7 +21,9 @@ class MediaComments extends Model
         return $this->hasMany(CommentsReplays::class)
         ->select('comments_replays.*','clients.name as replay_of',
         'client_profiles.picture','client_profiles.gender','client_profiles.account_type')
+        
         ->join('client_profiles','comments_replays.client_id','client_profiles.client_id')
+        ->selectRaw('DATE_FORMAT(comments_replays.updated_at, "%d %b %y") as date')
         ->join('clients', 'comments_replays.client_id', 'clients.id');
     }
 }

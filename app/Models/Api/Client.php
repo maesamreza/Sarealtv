@@ -81,4 +81,15 @@ class Client extends Authenticatable
             'client_id'
         );
     }
+
+    public function myLikes()
+    {
+
+        return $this->belongsToMany(
+            \App\Models\ClientMedia::class,
+            'client_likes',
+            'client_id',
+            'id'
+        );
+    }
 }

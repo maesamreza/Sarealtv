@@ -84,6 +84,7 @@ class MediaComments extends Controller
       "client_media_id",
       "comments",'clients.name as comment_of',
       'client_profiles.picture','client_profiles.gender','client_profiles.account_type')
+      ->selectRaw('DATE_FORMAT(media_comments.updated_at, "%d %b %y") as date')
       ->join('client_profiles','media_comments.client_id','client_profiles.client_id')
       ->join('clients', 'media_comments.client_id', 'clients.id')
      ->where('client_media_id',$mediaId)->get();

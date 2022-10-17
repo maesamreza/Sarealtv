@@ -100,15 +100,20 @@ class ClientMediaController extends Controller
     }
 
     public function fetchAllMedia($clientId=false){
-        $user = Util::getUserDetail();
+$user = Util::getUserDetail();
 
-    $clientId =($user != null && $user->role =="client")?$user->id:$clientId;
+ $clientId =(!$clientId && $user != null || $user != null && $user->role =="client")?$user->id:$clientId;
 
  $checkValid = Validator::make(['id'=>$clientId],['id'=>'required|integer|exists:clients,id']);
- if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid']);
-
- $client = Client::find($clientId);
- $clientMedia = $client->media()->get();
+ if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
+ $client = Client::with('clientProfile')->find($clientId);
+ $wner =',"'.$client->name.'" as name,';
+ $wner .='"'.$client->clientProfile->picture.'" as picture,';
+ $wner .='"'.$client->clientProfile->gender.'" as gender,';
+ $wner .='"'.$client->clientProfile->account_type.'" as account_type';
+ $clientMedia = $client->media()
+ ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date'.$wner)
+ ->get();
  return $clientMedia;
     }
 
