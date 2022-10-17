@@ -102,8 +102,7 @@ class ClientMediaController extends Controller
     public function fetchAllMedia($clientId=false){
 $user = Util::getUserDetail();
 
- $clientId =(!$clientId && $user != null || $user != null && $user->role =="client")?$user->id:$clientId;
-
+ $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId; 
  $checkValid = Validator::make(['id'=>$clientId],['id'=>'required|integer|exists:clients,id']);
  if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
  $client = Client::with('clientProfile')->find($clientId);
