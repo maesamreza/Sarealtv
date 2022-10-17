@@ -74,7 +74,7 @@ class MediaComments extends Controller
         
         if($checkInputs->fails())
         { return response()->json(['status'=>false,
-                    'message'=>'Param ID Not Valid!  Or Your Unauthourized'],422);
+                    'message'=>'Param ID Not Valid!  Or No comments found'],422);
         }
 
         try{
