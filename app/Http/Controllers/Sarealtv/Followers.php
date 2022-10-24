@@ -84,7 +84,7 @@ class Followers extends Controller
     public function followers($clientId=false){
         $user = Util::getUserDetail();
 
-        $clientId =($user->role ==='admin')?$clientId:$user->id;
+        $clientId =($clientId)?$clientId:$user->id;
         $rules = ['id' => 'required|integer|exists:clients,id'];
 
         $checkInputs = Validator::make(['id' => $clientId], $rules);
@@ -96,7 +96,11 @@ class Followers extends Controller
             ], 422);
         }
 
-     try{ $followers = $user->followers() 
+        
+        try{
+            
+            if( $clientId) $user = Client::find($clientId);
+        $followers = $user->followers() 
     ->select('clients.*','client_profiles.picture','client_profiles.gender','client_profiles.account_type')
     ->join('client_profiles','clients.id','client_profiles.client_id')->get();
         return response()->json([
@@ -117,7 +121,7 @@ class Followers extends Controller
 public function following($clientId=false){
     $user = Util::getUserDetail();
 
-    $clientId =($user->role ==='admin')?$clientId:$user->id;
+    $clientId =($clientId)?$clientId:$user->id;
 
     $rules = ['id' => 'required|integer|exists:clients,id'];
 
@@ -130,14 +134,17 @@ public function following($clientId=false){
         ], 422);
     }
 
- try{ $followers = $user->following()
+    
+ try{    
+    if( $clientId) $user = Client::find($clientId);
+    $followers = $user->following()
     ->select('clients.*','client_profiles.picture','client_profiles.gender','client_profiles.account_type')
       ->join('client_profiles','clients.id','client_profiles.client_id')
     ->get();
     return response()->json([
         'status' => true,
         'message' => 'List of You Following!',
-        'followers'=>$followers
+        'following'=>$followers
     ]);
 
 }
@@ -146,5 +153,4 @@ catch (\illuminate\Database\QueryException $e) {
     return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
 }
 }
-
 }

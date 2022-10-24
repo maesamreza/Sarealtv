@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 //Route::get('get/file/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
 Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMedia']);
 Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
+Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);
+
 Route::get('media/get/comments/{mediaId}',[App\Http\Controllers\Sarealtv\MediaComments::class,'fetchComments']);
 
 Route::middleware('AdminOrClient')->group(function () {

@@ -220,12 +220,35 @@ class AdminController extends Controller
            $clientData->is_following = $clientData->followers()->where('id',$user->id)->exists();
            $clientData->is_follower = $clientData->following()->where('id',$user->id)->exists();
         }
-
-
         return response([
             'status' => true,
             'message' => $clientData->name . " Profile Details and Media",
             'user' => $clientData
         ]);
+    }
+
+    public function findAccountByKey($searchKey)
+    {
+        $checkValid = Validator::make(['search' => $searchKey], ['search' => 'required|string|min:2']);
+        if ($checkValid->fails())
+            return response(['status' => false, 'message' => 'Search Key is Not Valid ']);
+try{
+        $clientData = Client::where('name','LIKE',"%%$searchKey%%")
+        ->select('clients.id','clients.name','client_profiles.picture','client_profiles.gender','client_profiles.account_type')
+        ->join('client_profiles','clients.id','client_profiles.client_id')->get();
+        $total =count($clientData);
+        return response()->json([
+            'status' => ($total>0),
+            'message' => "$total match found!..",
+            'result'=>$clientData
+        ]);
+    
+    }
+    catch (\illuminate\Database\QueryException $e) {
+    
+        return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+    }
+
+
     }
 }

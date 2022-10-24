@@ -21,13 +21,14 @@ public function like(Request $req,$mediaId){
                 'message'=>'Inputs Not Valid!','errors'=>$checkInputs->errors()],422);
    
    try{
-                $media = Media::find($mediaId);
+        $media = Media::select('id','client_id')->find($mediaId);
+    
     if($media->likes()->where('client_id',$user->id)->delete()){
         return response()->json(['status'=>true,
         'message'=>'Media Dislike Recorded!']);
        }
        else if($media->likes()->create(['client_id'=>$user->id,
-       'likes'=>1])){
+       'owner_id'=>$media->client_id])){
 
         return response()->json(['status'=>true,
         'message'=>'Media like Recorded!']);

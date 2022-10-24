@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('media_likes', function (Blueprint $table) {
-            $table->id();
+        Schema::create('media_like', function (Blueprint $table) {
             $table->unsignedBigInteger('client_id');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->unsignedBigInteger('owner_id');
+            $table->foreign('owner_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('client_media_id');
             $table->foreign('client_media_id')->references('id')->on('client_media')->onDelete('cascade');
-            $table->unsignedBigInteger('likes');
             $table->timestamps();
         });
     }

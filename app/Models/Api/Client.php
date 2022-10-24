@@ -54,7 +54,7 @@ class Client extends Authenticatable
     {
         if (strchr(request()->path(), "api/user")) {
             return [
-                'likes' => $this->likes()->count(),
+                'likes' => $this->likesOnMyMedia()->count(),
                 'comments' => $this->comments()->count(),
                 'followers' => $this->followers()->count()
             ];
@@ -82,14 +82,10 @@ class Client extends Authenticatable
         );
     }
 
-    public function myLikes()
+    public function likesOnMyMedia()
     {
 
-        return $this->belongsToMany(
-            \App\Models\ClientMedia::class,
-            'client_likes',
-            'client_id',
-            'id'
-        );
+        return $this->hasMany(\App\Models\MediaLike::class,'owner_id');
+
     }
 }
