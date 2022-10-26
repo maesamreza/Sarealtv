@@ -14,6 +14,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+    //   $media =\App\Models\Api\Client::find(10);
+    //   return dd($media->likeMedia()->count());
+
         \App\Models\User::create([
                 'name' => 'Test User',
                 'email' => 'sarealtv@mail.com',

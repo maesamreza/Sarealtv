@@ -56,7 +56,9 @@ class Client extends Authenticatable
             return [
                 'likes' => $this->likesOnMyMedia()->count(),
                 'comments' => $this->comments()->count(),
-                'followers' => $this->followers()->count()
+                'followers' => $this->followers()->count(),
+                'following' => $this->following()->count()
+
             ];
         } else {
 
@@ -82,10 +84,52 @@ class Client extends Authenticatable
         );
     }
 
+
+    public function followerRequests()
+    {
+
+        return $this->belongsToMany(\App\Models\FollowRequest::class);
+    }
+
+    public function followingRequests()
+    {
+
+        return $this->belongsToMany(
+            \App\Models\FollowRequest::class,
+            'client_follower',
+            'follower_id',
+            'client_id'
+        );
+    }
+
+
+
     public function likesOnMyMedia()
     {
 
         return $this->hasMany(\App\Models\MediaLike::class,'owner_id');
 
+    }
+
+    public function ilikeMedia($filterId=false)
+    {
+
+       $media= 
+        \App\Models\ClientMedia::query()->select('id','url','des')
+        ->where('media_like.client_id',$this->id);
+       if($filterId) $media->where('media_like.owner_id',$filterId);
+
+       return $media->join('media_like','client_media.id','media_like.client_media_id');
+    }
+
+    public function likeMedia($filterId=false)
+    {
+
+        $media= 
+        \App\Models\ClientMedia::query()->select('id','url','des')
+        ->where('media_like.owner_id',$this->id);
+       if($filterId) $media->where('media_like.client_id',$filterId);
+
+       return $media->join('media_like','client_media.id','media_like.client_media_id');
     }
 }

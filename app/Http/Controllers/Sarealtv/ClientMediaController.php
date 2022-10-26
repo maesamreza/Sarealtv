@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Sarealtv;
 use Illuminate\Http\Request;
 use Validator;
 use App\Http\Controllers\Controller;
-//use App\Models\ClientMedia as Media;
+use App\Models\ClientMedia as Media;
 use App\Http\Controllers\Api\Tools\Util;
 use App\Models\Api\Client;
 use stdClass;
@@ -29,6 +29,10 @@ class ClientMediaController extends Controller
         $client = ($this->user->role == 'admin' && $clientId) ?
             Client::find($clientId) :
             Client::find($this->user->id);
+
+            if ($client->media()->count()>3) {
+                return response()->json(['status' => false, 'message' => 'Only 4 Media Files Can Be Added!']);
+            }
 
         $rule = [
             'title' => 'required|string',
@@ -115,5 +119,74 @@ $user = Util::getUserDetail();
  ->get();
  return $clientMedia;
     }
+
+
+    public function fetchAllMediaLiked($ownerId,$clientId=false){
+        $user = Util::getUserDetail();
+        
+         $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId;
+         $inputs =['id'=>$clientId];
+         $rules =['id'=>'required|integer|exists:clients,id'];
+         if($ownerId !="all"){
+            $inputs['ownerId']=intval($ownerId);
+            $rules['ownerId']='required|integer|exists:media_like,client_id';
+         }else{
+            $ownerId=false; 
+         }
+         $checkValid = Validator::make($inputs,$rules);
+         if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In','errors'=>$checkValid->errors()]);
+         $client = (!$clientId)?$user:Client::/*with('clientProfile')->*/find($clientId);
+        //  $wner =',"'.$client->name.'" as name,';
+        //  $wner .='"'.$client->clientProfile->picture.'" as picture,';
+        //  $wner .='"'.$client->clientProfile->gender.'" as gender,';
+        //  $wner .='"'.$client->clientProfile->account_type.'" as account_type';
+         $clientMedia = $client->likeMedia($ownerId)
+         ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date'/*.$wner*/)
+         ->get();
+        return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
+            }
+
+
+            public function fetchAllMediaILike($ownerId,$clientId=false){
+                $user = Util::getUserDetail();
+                
+                 $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId; 
+                 $inputs =['id'=>$clientId];
+                 $rules =['id'=>'required|integer|exists:clients,id'];
+                 if($ownerId !="all"){
+        
+                    $inputs['ownerId']=$ownerId;
+                    $rules['ownerId']='required|integer|exists:media_like,owner_id';
+                 }else{
+                    $ownerId=false; 
+                 }
+                 $checkValid = Validator::make($inputs,$rules);
+                 if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
+                 $client = (!$clientId)?$user:Client::/*with('clientProfile')->*/find($clientId);
+                //  $wner =',"'.$client->name.'" as name,';
+                //  $wner .='"'.$client->clientProfile->picture.'" as picture,';
+                //  $wner .='"'.$client->clientProfile->gender.'" as gender,';
+                //  $wner .='"'.$client->clientProfile->account_type.'" as account_type';
+                 $clientMedia = $client->ilikeMedia($ownerId)
+                 ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date'/*.$wner*/)
+                 ->get();
+                 return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
+                    }
+
+
+                    
+            public function getMediaById($MediaId){
+                  //$user = Util::getUserDetail();
+                
+                 $checkValid = Validator::make(['id'=>$MediaId],['id'=>'required|integer|exists:client_media,id']);
+                 if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Public']);
+            
+                 $clientMedia = Media::with('clientInfo')
+                 ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date')
+                 ->where('id',$MediaId)->first();
+                 return response()->json(['status'=>true,'message'=>'Media Details','media'=>$clientMedia]);
+         
+                    }
+
 
 }

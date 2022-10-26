@@ -21,6 +21,12 @@ use Illuminate\Support\Facades\Route;
 // });
 //Route::get('get/file/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
 Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMedia']);
+Route::get('fetch/{ownerId}/media/like/by/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaLiked']);
+Route::get('fetch/{ownerId}/media/like/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaILike']);
+Route::get('get/media/info/{mediaId}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getMediaById']);
+
+
+
 Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
 Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);
 

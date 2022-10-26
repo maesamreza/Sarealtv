@@ -34,6 +34,7 @@ class Followers extends Controller
         try {
 
             $client = Client::find($clientId);
+            
             $client->followers()->attach($user->id);
 
             return response()->json([
