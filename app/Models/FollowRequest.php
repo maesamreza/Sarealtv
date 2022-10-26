@@ -7,5 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class FollowRequest extends Model
 {
+    protected $fillable =['follower_id'];
     use HasFactory;
 }

@@ -70,7 +70,7 @@ class Client extends Authenticatable
     public function followers()
     {
 
-        return $this->belongsToMany(\App\Models\Follower::class);
+        return $this->belongsToMany(\App\Models\Follower::class,);
     }
 
     public function following()
@@ -88,7 +88,7 @@ class Client extends Authenticatable
     public function followerRequests()
     {
 
-        return $this->belongsToMany(\App\Models\FollowRequest::class);
+        return $this->belongsToMany(\App\Models\FollowRequest::class,'follow_requests','client_id','follower_id');
     }
 
     public function followingRequests()
