@@ -23,7 +23,7 @@ class Client extends Authenticatable
         'updated_at',
         "email_verified_at",
         "password",
-        "remember_token"
+        "remember_token", "pivot"
     ];
     use HasApiTokens, HasFactory;
 
@@ -88,18 +88,18 @@ class Client extends Authenticatable
     public function followerRequests()
     {
 
-        return $this->belongsToMany(\App\Models\FollowRequest::class,'follow_requests','client_id','follower_id');
+        return $this->belongsToMany(self::class, 'follow_requests', 'client_id', 'follower_id')->withTimestamps();
     }
 
     public function followingRequests()
     {
 
         return $this->belongsToMany(
-            \App\Models\FollowRequest::class,
-            'client_follower',
+            self::class,
+            'follow_requests',
             'follower_id',
             'client_id'
-        );
+        )->withTimestamps();
     }
 
 
@@ -107,29 +107,28 @@ class Client extends Authenticatable
     public function likesOnMyMedia()
     {
 
-        return $this->hasMany(\App\Models\MediaLike::class,'owner_id');
-
+        return $this->hasMany(\App\Models\MediaLike::class, 'owner_id');
     }
 
-    public function ilikeMedia($filterId=false)
+    public function ilikeMedia($filterId = false)
     {
 
-       $media= 
-        \App\Models\ClientMedia::query()->select('id','url','des')
-        ->where('media_like.client_id',$this->id);
-       if($filterId) $media->where('media_like.owner_id',$filterId);
+        $media =
+            \App\Models\ClientMedia::query()->select('id', 'url', 'des')
+            ->where('media_like.client_id', $this->id);
+        if ($filterId) $media->where('media_like.owner_id', $filterId);
 
-       return $media->join('media_like','client_media.id','media_like.client_media_id');
+        return $media->join('media_like', 'client_media.id', 'media_like.client_media_id');
     }
 
-    public function likeMedia($filterId=false)
+    public function likeMedia($filterId = false)
     {
 
-        $media= 
-        \App\Models\ClientMedia::query()->select('id','url','des')
-        ->where('media_like.owner_id',$this->id);
-       if($filterId) $media->where('media_like.client_id',$filterId);
+        $media =
+            \App\Models\ClientMedia::query()->select('id', 'url', 'des')
+            ->where('media_like.owner_id', $this->id);
+        if ($filterId) $media->where('media_like.client_id', $filterId);
 
-       return $media->join('media_like','client_media.id','media_like.client_media_id');
+        return $media->join('media_like', 'client_media.id', 'media_like.client_media_id');
     }
 }
