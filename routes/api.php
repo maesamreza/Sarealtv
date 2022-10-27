@@ -52,6 +52,10 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::post('unfollow/{clientId}',[App\Http\Controllers\Sarealtv\Followers::class,'unFollow']);
     Route::post('get/followers/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'followers']);
     Route::post('get/you/following/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'following']);
+    Route::post('get/follow/requests/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'followRequests']);
+    Route::post('get/following/requests/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'followingRequests']);
+    Route::post('accept/follow/{id}',[App\Http\Controllers\Sarealtv\Followers::class,'acceptFollowRequest']);
+    Route::post('delete/follow/{id}',[App\Http\Controllers\Sarealtv\Followers::class,'deleteFollowRequest']);
     
     // Route::delete('media/remove/comment/replay/{id}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'removeCommentReplay']);
     // Route::get('media/get/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'fetchCommentReplays']);
