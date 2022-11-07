@@ -63,5 +63,11 @@ public function clientInfo(){
     ->select('clients.id','clients.name','client_profiles.picture','client_profiles.gender','client_profiles.account_type')
     ->join('client_profiles','clients.id','client_profiles.client_id');
 }
+
+
+public function MediaList()
+{
+    return $this->belongsToMany(\App\Models\MediaBookmark::class)->withTimestamps();
+}
    
 }
