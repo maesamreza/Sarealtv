@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 //Route::get('get/file/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
+
 Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMedia']);
 Route::get('fetch/{ownerId}/media/like/by/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaLiked']);
 Route::get('fetch/{ownerId}/media/like/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaILike']);
@@ -59,8 +60,6 @@ Route::middleware('AdminOrClient')->group(function () {
     
     // Route::delete('media/remove/comment/replay/{id}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'removeCommentReplay']);
     // Route::get('media/get/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'fetchCommentReplays']);
-   
-
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
     // authenticated staff routes here 
@@ -75,7 +74,6 @@ Route::post('admin/login', [adminController::class, 'login'])->name('adminLogin'
 
 Route::group(['prefix' => 'admin', 'middleware' => ['Admin']], function () {
     // authenticated staff routes here 
-
     Route::post('/update/profile', [adminController::class, 'updateProfile'])->name('adminregister');
     Route::get('dashboard', [adminController::class, 'adminDashboard']);
 });
