@@ -7,9 +7,42 @@ use Illuminate\Http\Request;
 class MediaBookmarkController extends Controller
 {
 
+    public function CreateList(Request $req)
+    {
+        $user = Util::getUserDetail();
+
+        $rules = [
+            'type' => 'required|string|in:Private,Public',
+            'des' => 'nullable|string',
+            'title' => 'required|string',
+            'checkList' => "required|integer|exists:bookmark_lists,!client_id,title,$req->title"
+        ];
+        $checkInputs = Validator::make(['checkList' => $user->id], $rules, [
+            'checkList.exists' => 'This Title Allready In List'
+        ]);
+        if ($checkInputs->fails()) return response()->json([
+            'status' => false,
+            'message' => 'Inputs Not Valid!', 'errors' => $checkInputs->errors()
+        ], 422);
+
+        try {
+
+            $user->BookmarkLists()->create([
+                'type' => $req->type,
+                'title' => $req->title,
+                'des' => $req->des,
+            ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'List Created'
+            ]);
+        } catch (\illuminate\Database\QueryException $e) {
+            return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+        }
+    }
 
 
-    public function AddToList($mediaId)
+    public function AddToList($mediaId,$listId)
     {
 
         $user = Util::getUserDetail();
@@ -39,12 +72,12 @@ class MediaBookmarkController extends Controller
         }
     }
 
-    public function RemoveFromList($mediaId,$clientId=false)
+    public function RemoveFromList($mediaId, $clientId = false)
     {
 
         $user = Util::getUserDetail();
-        $clientId=($user->role ='admin')?$clientId:$user->id;
-        if(!$clientId)  return response()->json([
+        $clientId = ($user->role = 'admin') ? $clientId : $user->id;
+        if (!$clientId)  return response()->json([
             'status' => false,
             'message' => 'Client Id Is Required'
         ], 422);
@@ -61,11 +94,12 @@ class MediaBookmarkController extends Controller
         ], 422);
 
         try {
-  
-            \App\Models\MediaBookmark::where('client_id',$clientId)->where('client_media_id',$mediaId)->delete();
+
+            \App\Models\MediaBookmark::where('client_id', $clientId)->where('client_media_id', $mediaId)->delete();
             return response()->json([
                 'status' => true,
-                'message' => 'Removed From List']);
+                'message' => 'Removed From List'
+            ]);
         } catch (\illuminate\Database\QueryException $e) {
             return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
         }
@@ -73,22 +107,22 @@ class MediaBookmarkController extends Controller
 
 
 
-    public function getList($clientId=false,$channel=false)
+    public function getList($clientId = false, $channel = false)
     {
         $user = Util::getUserDetail();
 
-        $clientId=($user->role ='admin')?$clientId:$user->id;
-        if(!$clientId)  return response()->json([
+        $clientId = ($user->role = 'admin') ? $clientId : $user->id;
+        if (!$clientId)  return response()->json([
             'status' => false,
             'message' => 'Client Id Is Required'
         ], 422);
-   
+
         try {
             $mediaList = \App\Models\ClientMedia::query()->select('id', 'url', 'des')
                 ->join('media_bookmarks', 'client_media.id', '=', 'media_bookmarks.client_id')
-                ->where('client_id',$clientId);
+                ->where('client_id', $clientId);
 
-                ($channel)?$mediaList->where('owner_id',$channel)->get(): $mediaList->get();
+            ($channel) ? $mediaList->where('owner_id', $channel)->get() : $mediaList->get();
             return response()->json([
                 'status' => true,
                 'message' => 'Media List', 'media_list' => $mediaList

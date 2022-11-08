@@ -132,10 +132,16 @@ class Client extends Authenticatable
         return $media->join('media_like', 'client_media.id', 'media_like.client_media_id');
     }
 
-    public function MediaList($id=false)
+    public function MediaList($id = false)
     {
-       if($id) return $this->belongsToMany(\App\Models\MediaBookmark::class,'owner_id')->withTimestamps();
-       
+        if ($id) return $this->belongsToMany(\App\Models\MediaBookmark::class, 'owner_id')->withTimestamps();
+
         return $this->belongsToMany(\App\Models\MediaBookmark::class)->withTimestamps();
+    }
+
+    public function BookmarkLists($type = false)
+    {
+        if ($type) return $this->hasMany(\App\Models\BookmarkList::class)->where('type', $type);
+        return $this->hasMany(\App\Models\BookmarkList::class);
     }
 }
