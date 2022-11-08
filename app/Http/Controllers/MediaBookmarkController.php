@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Api\Tools\Util;
+use Validator;
+use Illuminate\Validation\Rule;
 
 class MediaBookmarkController extends Controller
 {
@@ -49,16 +52,17 @@ class MediaBookmarkController extends Controller
 
         $rules = [
             'id' => 'required|integer|exists:client_media,id',
-            'checkList' => "required|integer|exists:media_bookmarks,!client_media_id,client_id,$user->id"
+            'checkList' => ["required",'integer',Rule::unique('media_bookmarks','client_media_id')
+            ->where('client_id',$user->id)]
         ];
-        $checkInputs = Validator::make(['id' => $mediaId], $rules, [
-            'checkList.exists' => 'This Media Allready In List'
+        $checkInputs = Validator::make(['id' => $mediaId,
+        'checkList' =>$mediaId], $rules, [
+            'checkList.unique' => 'This Media Allready In List'
         ]);
         if ($checkInputs->fails()) return response()->json([
             'status' => false,
             'message' => 'Inputs Not Valid!', 'errors' => $checkInputs->errors()
         ], 422);
-
         try {
 
             $media = \App\Models\ClientMedia::select('id', 'client_id')->find($mediaId);
@@ -76,8 +80,8 @@ class MediaBookmarkController extends Controller
     {
 
         $user = Util::getUserDetail();
-        $clientId = ($user->role = 'admin') ? $clientId : $user->id;
-        if (!$clientId)  return response()->json([
+        $clientId=($user->role =='admin')?$clientId:$user->id;
+        if(!$clientId)  return response()->json([
             'status' => false,
             'message' => 'Client Id Is Required'
         ], 422);
@@ -107,22 +111,19 @@ class MediaBookmarkController extends Controller
 
 
 
-    public function getList($clientId = false, $channel = false)
+    public function getList($clientId=false)
     {
         $user = Util::getUserDetail();
 
-        $clientId = ($user->role = 'admin') ? $clientId : $user->id;
-        if (!$clientId)  return response()->json([
+        $clientId=($user->role =="admin")?$clientId:$user->id;
+        $channel =intval(request()->channel);
+        if(!$clientId)  return response()->json([
             'status' => false,
             'message' => 'Client Id Is Required'
         ], 422);
 
         try {
-            $mediaList = \App\Models\ClientMedia::query()->select('id', 'url', 'des')
-                ->join('media_bookmarks', 'client_media.id', '=', 'media_bookmarks.client_id')
-                ->where('client_id', $clientId);
-
-            ($channel) ? $mediaList->where('owner_id', $channel)->get() : $mediaList->get();
+            $mediaList = $user->MediaList($channel)->select('id', 'url', 'des')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'Media List', 'media_list' => $mediaList

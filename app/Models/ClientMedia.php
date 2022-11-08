@@ -27,7 +27,7 @@ class ClientMedia extends Model
     protected $hidden = [
        
         'created_at',
-        'updated_at'
+        'updated_at', "pivot"
     ];
     protected $appends = [
         'is_like'];
@@ -67,7 +67,7 @@ public function clientInfo(){
 
 public function MediaList()
 {
-    return $this->belongsToMany(\App\Models\MediaBookmark::class)->withTimestamps();
+    return $this->hasMany(\App\Models\MediaBookmark::class);
 }
    
 }
