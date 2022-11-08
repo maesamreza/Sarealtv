@@ -27,7 +27,7 @@ class ClientMedia extends Model
     protected $hidden = [
        
         'created_at',
-        'updated_at'
+        'updated_at', "pivot"
     ];
     protected $appends = [
         'is_like'];
@@ -62,6 +62,12 @@ public function clientInfo(){
     return $this->hasOne(\App\Models\Api\Client::class,'id','client_id')
     ->select('clients.id','clients.name','client_profiles.picture','client_profiles.gender','client_profiles.account_type')
     ->join('client_profiles','clients.id','client_profiles.client_id');
+}
+
+
+public function MediaList()
+{
+    return $this->hasMany(\App\Models\MediaBookmark::class);
 }
    
 }

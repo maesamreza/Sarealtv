@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('media_like', function (Blueprint $table) {
+        Schema::create('media_bookmarks', function (Blueprint $table) {
             $table->unsignedBigInteger('client_id');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('owner_id');
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('media_likes');
+        Schema::dropIfExists('media_bookmarks');
     }
 };

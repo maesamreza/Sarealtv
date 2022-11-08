@@ -31,35 +31,43 @@ Route::get('get/media/info/{mediaId}', [App\Http\Controllers\Sarealtv\ClientMedi
 Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
 Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);
 
-Route::get('media/get/comments/{mediaId}',[App\Http\Controllers\Sarealtv\MediaComments::class,'fetchComments']);
+Route::get('media/get/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'fetchComments']);
 
 Route::middleware('AdminOrClient')->group(function () {
     Route::get('/user', [adminController::class, 'getMyDetails']);
     Route::post('update/client/profile/{id?}', [ClientController::class, 'updateProfile'])->name('client.update');
     Route::post('add/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'addMedia']);
     Route::get('get/media/{fileURL}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getFileByUrl']);
-   
-    Route::get('media/like/{mediaId}',[App\Http\Controllers\Sarealtv\MediaLikes::class,'like']);
-    Route::get('media/count/like/{mediaId}',[App\Http\Controllers\Sarealtv\MediaLikes::class,'getLikes']);
-   
-    Route::post('media/add/comments/{mediaId}',[App\Http\Controllers\Sarealtv\MediaComments::class,'addComment']);
-    Route::delete('media/remove/comments/{id}',[App\Http\Controllers\Sarealtv\MediaComments::class,'removeComment']);
-   
-    Route::post('media/add/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'addCommentReplay']);
-    Route::delete('media/remove/comment/replay/{id}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'removeCommentReplay']);
-    Route::get('media/get/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'fetchCommentReplays']);
-   
-    Route::post('follow/{clientId}',[App\Http\Controllers\Sarealtv\Followers::class,'follow']);
-    Route::post('unfollow/{clientId}',[App\Http\Controllers\Sarealtv\Followers::class,'unFollow']);
-    Route::post('get/followers/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'followers']);
-    Route::post('get/you/following/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'following']);
-    Route::post('get/follow/requests/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'followRequests']);
-    Route::post('get/following/requests/{clientId?}',[App\Http\Controllers\Sarealtv\Followers::class,'followingRequests']);
-    Route::post('accept/follow/{id}',[App\Http\Controllers\Sarealtv\Followers::class,'acceptFollowRequest']);
-    Route::post('delete/follow/{id}',[App\Http\Controllers\Sarealtv\Followers::class,'deleteFollowRequest']);
-    
+
+    Route::get('media/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'like']);
+    Route::get('media/count/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'getLikes']);
+
+    Route::post('media/add/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'addComment']);
+    Route::delete('media/remove/comments/{id}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'removeComment']);
+
+    Route::post('media/add/comment/replay/{commentId}', [App\Http\Controllers\Sarealtv\CommentsReplay::class, 'addCommentReplay']);
+    Route::delete('media/remove/comment/replay/{id}', [App\Http\Controllers\Sarealtv\CommentsReplay::class, 'removeCommentReplay']);
+    Route::get('media/get/comment/replay/{commentId}', [App\Http\Controllers\Sarealtv\CommentsReplay::class, 'fetchCommentReplays']);
+
+    Route::post('follow/{clientId}', [App\Http\Controllers\Sarealtv\Followers::class, 'follow']);
+    Route::post('unfollow/{clientId}', [App\Http\Controllers\Sarealtv\Followers::class, 'unFollow']);
+    Route::post('get/followers/{clientId?}', [App\Http\Controllers\Sarealtv\Followers::class, 'followers']);
+    Route::post('get/you/following/{clientId?}', [App\Http\Controllers\Sarealtv\Followers::class, 'following']);
+    Route::post('get/follow/requests/{clientId?}', [App\Http\Controllers\Sarealtv\Followers::class, 'followRequests']);
+    Route::post('get/following/requests/{clientId?}', [App\Http\Controllers\Sarealtv\Followers::class, 'followingRequests']);
+    Route::post('accept/follow/{id}', [App\Http\Controllers\Sarealtv\Followers::class, 'acceptFollowRequest']);
+    Route::post('delete/follow/{id}', [App\Http\Controllers\Sarealtv\Followers::class, 'deleteFollowRequest']);
+
     // Route::delete('media/remove/comment/replay/{id}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'removeCommentReplay']);
     // Route::get('media/get/comment/replay/{commentId}',[App\Http\Controllers\Sarealtv\CommentsReplay::class,'fetchCommentReplays']);
+
+
+    // media List Bookmarks
+    Route::post('media/list/add/{mediaId}', [App\Http\Controllers\MediaBookmarkController::class, 'AddToList']);
+    Route::post('media/list/remove/{mediaId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveFromList']);
+    Route::get('media/list/fetch/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'getList']);
+    //<--end-->
+
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
     // authenticated staff routes here 

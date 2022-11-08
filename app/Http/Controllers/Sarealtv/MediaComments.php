@@ -28,7 +28,7 @@ class MediaComments extends Controller
            'comments'=>$req->comments]);
     
             return response()->json(['status'=>true,
-            'message'=>'Media Comments Recorded!']);
+            'message'=>'Media Comments Recorded!','refresh'=>$media->comments()->get()]);
            }
            catch (\illuminate\Database\QueryException $e) {
             return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
