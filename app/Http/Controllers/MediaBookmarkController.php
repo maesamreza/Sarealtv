@@ -13,14 +13,14 @@ class MediaBookmarkController extends Controller
     public function CreateList(Request $req)
     {
         $user = Util::getUserDetail();
-
         $rules = [
             'type' => 'required|string|in:Private,Public',
             'des' => 'nullable|string',
             'title' => 'required|string',
-            'checkList' => "required|integer|exists:bookmark_lists,!client_id,title,$req->title"
+            'checkList' => ["required",'integer',Rule::unique('bookmark_lists','client_id')
+            ->where('title',$req->title)]
         ];
-        $checkInputs = Validator::make(['checkList' => $user->id], $rules, [
+        $checkInputs = Validator::make(array_merge($req->all(),['checkList' => $user->id]), $rules, [
             'checkList.exists' => 'This Title Allready In List'
         ]);
         if ($checkInputs->fails()) return response()->json([

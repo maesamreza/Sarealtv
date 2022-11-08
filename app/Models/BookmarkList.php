@@ -9,5 +9,5 @@ class BookmarkList extends Model
 {
     //use HasFactory;
 
-    protected $fillable=['client_id','title','des','account_type'];
+    protected $fillable=['client_id','title','des','type'];
 }
