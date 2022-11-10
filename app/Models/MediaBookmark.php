@@ -12,6 +12,6 @@ class MediaBookmark extends Model
         'created_at',
         'updated_at'
     ];
-    protected $fillable =['client_media_id','client_id','owner_id'];
+    protected $fillable =['client_media_id','client_id','owner_id','bookmark_list_id'];
     //use HasFactory;
 }
