@@ -94,7 +94,7 @@ class MediaBookmarkController extends Controller
             'listId' => "required|integer|exists:bookmark_lists,id,client_id,$user->id",
             'id' => 'required|integer|exists:client_media,id',
             'checkList' => ["required",'integer',Rule::unique('media_bookmarks','client_media_id')
-            ->where('client_id',$user->id)]
+            ->where('client_id',$user->id)->where('bookmark_list_id',$listId)]
         ];
         $checkInputs = Validator::make(['id' => $mediaId,
         'checkList' =>$mediaId,
@@ -177,10 +177,11 @@ class MediaBookmarkController extends Controller
 
 
         try {
-            $mediaList = $user->MediaList($listId,$channel)->select('id', 'url', 'des')->get();
+            $mediaList = $user->MediaList($listId,$channel)->select('id', 'url', 'des','title')->get();
             return response()->json([
                 'status' => true,
-                'message' => 'Media List', 'media_list' => $mediaList
+                'message' => 'Media List', 'media_list' => $mediaList,
+                'list_details'=>\App\Models\BookmarkList::select('id','title','des')->find($listId)
             ]);
         } catch (\illuminate\Database\QueryException $e) {
             return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
