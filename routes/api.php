@@ -73,6 +73,7 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::post('message/send', [App\Http\Controllers\Messages::class, 'sendMessage']);
     Route::post('message/remove/{messageId}', [App\Http\Controllers\Messages::class, 'RemoveMessage']);
     Route::get('messages/{clientId}', [App\Http\Controllers\Messages::class, 'getMessageList']);
+    Route::get('inbox/list', [App\Http\Controllers\Messages::class, 'fetchChatings']);
     //<--end-->
 
 });

@@ -105,4 +105,12 @@ class Messages extends Controller
         return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
     }
     }
+
+    public function fetchChatings(){
+        $user = Util::getUserDetail();
+
+       return  $user->inboxList()->get();
+
+
+    }
 }

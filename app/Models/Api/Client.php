@@ -150,6 +150,12 @@ class Client extends Authenticatable
         return $this->belongsToMany(\App\Models\Message::class, 'message_bridges', 'sender_id')
             ->withTimestamps();
     }
+    public function inboxList(){
+        return self::whereNot('clients.id',$this->id)->select('name','clients.id')
+        ->join('message_bridges',function($inbox){
+            $inbox->on('clients.id','message_bridges.sender_id')
+            ->orOn('clients.id','message_bridges.reciever_id');})->distinct();
+    }
 
 
     public function BookmarkLists($type = false)
