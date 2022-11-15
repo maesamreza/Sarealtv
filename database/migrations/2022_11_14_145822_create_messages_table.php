@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->text('message');
+            $table->boolean('is_deleted')->default(0);
             $table->timestamps();
         });
     }

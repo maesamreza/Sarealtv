@@ -68,6 +68,13 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('media/list/fetch/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'getList']);
     //<--end-->
 
+
+    // messages
+    Route::post('message/send', [App\Http\Controllers\Messages::class, 'sendMessage']);
+    Route::post('message/remove/{messageId}', [App\Http\Controllers\Messages::class, 'RemoveMessage']);
+    Route::get('messages/{clientId}', [App\Http\Controllers\Messages::class, 'getMessageList']);
+    //<--end-->
+
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
     // authenticated staff routes here 
