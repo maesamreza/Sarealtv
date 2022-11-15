@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('client_media_id')->references('id')->on('client_media')->onDelete('cascade');
             $table->unsignedBigInteger('bookmark_list_id');
             $table->foreign('bookmark_list_id')->references('id')->on('bookmark_lists')->onDelete('cascade');
-            $table->unique(['client_id','client_media_id','bookmark_list_id']);
+            $table->unique(['client_media_id','bookmark_list_id']);
             $table->timestamps();
         });
     }

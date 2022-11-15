@@ -141,6 +141,17 @@ class Client extends Authenticatable
         ->where('bookmark_list_id',$listId)->withTimestamps();
     }
 
+    public function Messages($sender = false)
+    {
+        if ($sender) return $this->belongsToMany(\App\Models\Message::class, 'message_bridges', 'sender_id')
+            ->where('message_bridges.sender_id', $sender)
+            ->orWhere('message_bridges.reciever_id', $sender)->withTimestamps();
+
+        return $this->belongsToMany(\App\Models\Message::class, 'message_bridges', 'sender_id')
+            ->withTimestamps();
+    }
+
+
     public function BookmarkLists($type = false)
     {
         if ($type) return $this->hasMany(\App\Models\BookmarkList::class)->where('type', $type);
