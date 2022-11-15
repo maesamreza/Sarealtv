@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->string('title');
             $table->string('des')->nullable();
-            $table->enum('account_type',['Private','Public']);
+            $table->enum('type',['Private','Public']);
             $table->unique(['client_id','title']);
             $table->timestamps();
         });

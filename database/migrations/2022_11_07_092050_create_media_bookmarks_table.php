@@ -20,9 +20,9 @@ return new class extends Migration
             $table->foreign('owner_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('client_media_id');
             $table->foreign('client_media_id')->references('id')->on('client_media')->onDelete('cascade');
-            $table->unique(['client_id','client_media_id']);
             $table->unsignedBigInteger('bookmark_list_id');
             $table->foreign('bookmark_list_id')->references('id')->on('bookmark_lists')->onDelete('cascade');
+            $table->unique(['client_id','client_media_id','bookmark_list_id']);
             $table->timestamps();
         });
     }

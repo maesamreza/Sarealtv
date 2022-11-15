@@ -63,9 +63,12 @@ Route::middleware('AdminOrClient')->group(function () {
 
 
     // media List Bookmarks
-    Route::post('media/list/add/{mediaId}', [App\Http\Controllers\MediaBookmarkController::class, 'AddToList']);
-    Route::post('media/list/remove/{mediaId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveFromList']);
-    Route::get('media/list/fetch/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'getList']);
+    Route::post('list/add', [App\Http\Controllers\MediaBookmarkController::class, 'CreateList']);
+    Route::post('media/list/add/{mediaId}/{listId}', [App\Http\Controllers\MediaBookmarkController::class, 'AddToList']);
+    Route::post('media/list/remove/{mediaId}/{listId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveFromList']);
+    Route::get('media/list/fetch/{listId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'getList']);
+    Route::get('{type}/list/fetch/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'fetchListNames']);
+    
     //<--end-->
 
 
