@@ -143,11 +143,11 @@ class Client extends Authenticatable
 
     public function Messages($sender = false)
     {
-        if ($sender) return $this->belongsToMany(\Aapp\Models\Message::class, 'message_bridges', 'sender_id')
-            ->where('media_bookmarks.sender_id', $sender)
-            ->orWhere('media_bookmarks.reciever_id', $sender)->withTimestamps();
+        if ($sender) return $this->belongsToMany(\App\Models\Message::class, 'message_bridges', 'sender_id')
+            ->where('message_bridges.sender_id', $sender)
+            ->orWhere('message_bridges.reciever_id', $sender)->withTimestamps();
 
-        return $this->belongsToMany(\Aapp\Models\Message::class, 'message_bridges', 'sender_id')
+        return $this->belongsToMany(\App\Models\Message::class, 'message_bridges', 'sender_id')
             ->withTimestamps();
     }
 

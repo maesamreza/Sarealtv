@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class MessageBridge extends Model
 {
-    use HasFactory;
+    protected $fillable =['reciever_id'];
 }

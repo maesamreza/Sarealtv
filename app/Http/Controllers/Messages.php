@@ -25,11 +25,14 @@ class Messages extends Controller
                 'message' => 'Inputs Not Valid!', 'errors' => $checkFields->errors()
             ], 422);
         }
-     
+      
 
         try{
-
-          $user->Messages()->create(array_intersect($req->all(),$rules));
+            $message =new \App\Models\Message;
+            $message->message=$req->message;
+            $message->save();
+            $user->Messages()->attach($message->id,[
+            'reciever_id'=>$req->reciever_id]);
           return response()->json([
             'status' => true,
             'message' => 'Added to List'
@@ -45,7 +48,7 @@ class Messages extends Controller
         $user = Util::getUserDetail();
 
         $rules =['messageId'=>["required",'integer',Rule::exists('message_bridges','message_id')
-        ->where('reciever_id',$user->id)->orWhere('sender_id',$user->id)]];
+        /*->where('reciever_id',$user->id)->orWhere('sender_id',$user->id)*/]];
 
         $checkFields=Validator::make(['messageId'=>$messageId],$rules);
         if( $checkFields->fails()){
@@ -57,8 +60,8 @@ class Messages extends Controller
 
         try{
 
-          $user->Messages()->where('message_id',$messageId)
-          ->where('reciever_id',$user->id)->orWhere('sender_id',$user->id)->update(['is_deleted',1]);
+            \App\Models\Message::where('id',$messageId)->whereHas('messageDetails',function($q) use($user){
+          $q->where('reciever_id',$user->id)->orWhere('sender_id',$user->id);})->update(['is_deleted'=>1]);
           return response()->json([
             'status' => true,
             'message' => 'Message Deleted Successfully!'
@@ -76,10 +79,9 @@ class Messages extends Controller
 
         $user = Util::getUserDetail();
 
-        $rules =['messageId'=>["required",'integer',\App\Models\MessageBridge::whereIn('reciever_id',[$user->id,$clientId])
-        ->orWhereIn('sender_id',[$user->id,$clientId])]];
+        $rules =['clientId'=>["required",'integer',Rule::exists('message_bridges','reciever_id')]];
 
-        $checkFields=Validator::make(['messageId'=>$messageId],$rules);
+        $checkFields=Validator::make(['clientId'=>$clientId],$rules);
         if( $checkFields->fails()){
             return response()->json([
                 'status' => false,
@@ -88,15 +90,16 @@ class Messages extends Controller
      
         try{
 
-         $messages = $user->Messages()->select('message_bridges.reciever_id','message_bridges.sender_id','message','id','created_at as date')
-          ->whereIn('message_bridges.reciever_id',[$user->id,$clientId])
-          ->orWhereIn('message_bridges.sender_id',[$user->id,$clientId])
+         $messages = $user->Messages($clientId)->select('message_bridges.reciever_id','message_bridges.sender_id','message','messages.id','messages.created_at as date')
+          //->whereIn('message_bridges.reciever_id',[$user->id,$clientId])
+          //->orWhereIn('message_bridges.sender_id',[$user->id,$clientId])
           ->join('clients','message_bridges.reciever_id','clients.id')
-          ->selectRaw("'$user->name' as sender","clients.name as reciever")
+          ->selectRaw("'$user->name' as sender,clients.name as reciever")
           ->get();
           return response()->json([
             'status' => true,
-            'message' => 'Messages history!'
+            'message' => 'Messages history!',
+            'chating'=> $messages
         ]);
     } catch (\illuminate\Database\QueryException $e) {
         return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
