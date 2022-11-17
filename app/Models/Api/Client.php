@@ -57,7 +57,8 @@ class Client extends Authenticatable
                 'likes' => $this->likesOnMyMedia()->count(),
                 'comments' => $this->comments()->count(),
                 'followers' => $this->followers()->count(),
-                'following' => $this->following()->count()
+                'following' => $this->following()->count(),
+                'Lists' => $this->ListNames('Public')->count()
 
             ];
         } else {
@@ -140,6 +141,16 @@ class Client extends Authenticatable
         return $this->belongsToMany(\App\Models\ClientMedia::class,'media_bookmarks')
         ->where('bookmark_list_id',$listId)->withTimestamps();
     }
+
+
+
+
+    public function ListNames($type)
+    {
+        return $this->hasMany(\App\Models\BookmarkList::class)
+        ->where('type',$type);
+    }
+
 
     public function Messages($sender = false)
     {

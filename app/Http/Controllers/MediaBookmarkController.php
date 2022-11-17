@@ -120,6 +120,37 @@ class MediaBookmarkController extends Controller
         }
     }
 
+
+
+
+
+    public function RemoveList($listId)
+    {
+
+        $user = Util::getUserDetail();
+
+        $rules = [
+            'listId' => "required|integer|exists:bookmark_lists,id,client_id,$user->id"];
+        $checkInputs = Validator::make([
+        'listId'=>$listId], $rules);
+        if ($checkInputs->fails()) return response()->json([
+            'status' => false,
+            'message' => 'Inputs Not Valid!', 'errors' => $checkInputs->errors()
+        ], 422);
+        try {
+
+            \App\Models\BookmarkList::find($listId)->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'List Removed'
+            ]);
+        } catch (\illuminate\Database\QueryException $e) {
+            return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+        }
+    }
+
+
+
     public function RemoveFromList($mediaId,$listId, $clientId = false)
     {
 
