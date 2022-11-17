@@ -12,7 +12,6 @@ class Message extends Model
     protected $hidden =["pivot"];
 
     public function messageDetails(){
-
-        return $this->hasOne(\App\Models\MessageBridge::class);
+     return $this->hasOne(\App\Models\MessageBridge::class);
     }
 }

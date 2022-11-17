@@ -77,7 +77,7 @@ class Messages extends Controller
 
     public function getMessageList($clientId){
 
-        $user = Util::getUserDetail();
+        $user = Util::getUserDetail()->load('clientProfile:client_id,picture');
 
         $rules =['clientId'=>["required",'integer',Rule::exists('message_bridges','reciever_id')]];
 
@@ -88,21 +88,45 @@ class Messages extends Controller
                 'message' => 'No Message history Found!..'], 422);
         }
      
+     
         try{
 
-         $messages = $user->Messages($clientId)->select('message_bridges.reciever_id','message_bridges.sender_id','message','messages.id','messages.created_at as date')
-          //->whereIn('message_bridges.reciever_id',[$user->id,$clientId])
-          //->orWhereIn('message_bridges.sender_id',[$user->id,$clientId])
-          ->join('clients','message_bridges.reciever_id','clients.id')
-          ->selectRaw("'$user->name' as sender,clients.name as reciever")
-          ->get();
+         $messages = $user->Messages($clientId)->select('message_bridges.reciever_id',
+         'message_bridges.sender_id','message',
+         'messages.id','messages.created_at as date')
+          ->leftJoin('clients',function($q){$q->on('message_bridges.reciever_id','clients.id')
+            ->orOn('message_bridges.sender_id','clients.id');})
+          ->leftJoin('client_profiles','message_bridges.reciever_id','client_profiles.client_id')
+          
+          ->selectRaw("clients.name as reciever,client_profiles.picture as picture")->get();
+
           return response()->json([
             'status' => true,
             'message' => 'Messages history!',
-            'chating'=> $messages
+            'chating'=> $messages,
+            'inbox'=>$user
         ]);
     } catch (\illuminate\Database\QueryException $e) {
         return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
     }
+    }
+
+    public function fetchChatings(){
+        $user = Util::getUserDetail();
+
+       return response()->json([
+        'status' => true,
+        'message' => 'Messages Inbox!',
+        'inbox'=>$user->inboxList()
+        ->leftJoin('client_profiles','clients.id','client_profiles.client_id')
+        ->selectRaw("client_profiles.picture,
+        client_profiles.account_type,
+        client_profiles.gender,
+        client_profiles.country")
+         
+        ->get()
+    ]);
+
+
     }
 }

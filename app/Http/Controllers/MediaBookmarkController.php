@@ -50,7 +50,7 @@ class MediaBookmarkController extends Controller
     {
         $user = Util::getUserDetail();
 
-        $clientId=($user->role =="admin")?intval($clientId):$user->id;
+        $clientId=($user->role =="admin" || $clientId)?intval($clientId):$user->id;
         $channel =intval(request()->channel);
         if(!$clientId)  return response()->json([
             'status' => false,
