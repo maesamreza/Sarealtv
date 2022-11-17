@@ -31,11 +31,22 @@ class Messages extends Controller
             $message =new \App\Models\Message;
             $message->message=$req->message;
             $message->save();
+            $message->sender_id=$user->id;
+            $message->reciever_id=$req->reciever_id;
             $user->Messages()->attach($message->id,[
-            'reciever_id'=>$req->reciever_id]);
+                'reciever_id'=>$req->reciever_id]);
+                
+                $pid =$req->reciever_id+$req->reciever_id;
+            // broadcast(new \App\Events\IsMessage($user, $message))->toOthers();
+            $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
+             env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
+              array('cluster' => 'ap2'));
+            $pusher->trigger("IS_MESSAGE_$pid", 'is.message', 
+            array('message' => $message));
+           
           return response()->json([
             'status' => true,
-            'message' => 'Added to List'
+            'message' => 'Message Sent!..'
         ]);
     } catch (\illuminate\Database\QueryException $e) {
         return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
