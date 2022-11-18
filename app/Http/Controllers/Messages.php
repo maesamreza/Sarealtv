@@ -30,14 +30,16 @@ class Messages extends Controller
         try{
             $message =new \App\Models\Message;
             $message->message=$req->message;
-            $message->save();
-            $message->sender_id=$user->id;
-            $message->reciever_id=$req->reciever_id;
+           $message->save();
             $user->Messages()->attach($message->id,[
                 'reciever_id'=>$req->reciever_id]);
                 
-                $pid =$req->reciever_id+$req->reciever_id;
+            $message->sender_id=$user->id;
+            $message->reciever_id=$req->reciever_id;
+
+                $pid =($user->id<$req->reciever_id)?$user->id."_".$req->reciever_id:$req->reciever_id."_".$user->id;
             // broadcast(new \App\Events\IsMessage($user, $message))->toOthers();
+
             $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
              env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
               array('cluster' => 'ap2'));
@@ -82,10 +84,6 @@ class Messages extends Controller
     }
     }
 
-
-
-
-
     public function getMessageList($clientId){
 
         $user = Util::getUserDetail()->load('clientProfile:client_id,picture');
@@ -101,21 +99,16 @@ class Messages extends Controller
      
      
         try{
-
          $messages = $user->Messages($clientId)->select('message_bridges.reciever_id',
          'message_bridges.sender_id','message',
-         'messages.id','messages.created_at as date')
-          ->leftJoin('clients',function($q){$q->on('message_bridges.reciever_id','clients.id')
-            ->orOn('message_bridges.sender_id','clients.id');})
-          ->leftJoin('client_profiles','message_bridges.reciever_id','client_profiles.client_id')
+         'messages.id','messages.created_at as date')->get();
+        $client =\App\Models\Api\Client::find($clientId)->with('clientProfile:client_id,picture')->first();
           
-          ->selectRaw("clients.name as reciever,client_profiles.picture as picture")->get();
-
           return response()->json([
             'status' => true,
             'message' => 'Messages history!',
             'chating'=> $messages,
-            'inbox'=>$user
+            'inbox'=>[$user->id=>$user,$client->id=>$client]
         ]);
     } catch (\illuminate\Database\QueryException $e) {
         return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
