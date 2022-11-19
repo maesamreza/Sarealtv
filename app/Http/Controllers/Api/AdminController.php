@@ -237,9 +237,10 @@ try{
         ->select('clients.id','clients.name','client_profiles.picture','client_profiles.gender','client_profiles.account_type')
         ->join('client_profiles','clients.id','client_profiles.client_id')->get();
         $total =count($clientData);
+        $t =($total>0)?$total:"No";
         return response()->json([
             'status' => ($total>0),
-            'message' => "$total match found!..",
+            'message' => "$t Matches Found",
             'result'=>$clientData
         ]);
     

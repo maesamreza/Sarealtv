@@ -25,13 +25,13 @@ public function like(Request $req,$mediaId){
     
     if($media->likes()->where('client_id',$user->id)->delete()){
         return response()->json(['status'=>true,
-        'message'=>'Media Dislike Recorded!','refresh'=>$media->likes()->count()]);
+        'message'=>'Like Removed!','refresh'=>$media->likes()->count()]);
        }
        else if($media->likes()->create(['client_id'=>$user->id,
        'owner_id'=>$media->client_id])){
 
         return response()->json(['status'=>true,
-        'message'=>'Media like Recorded!','refresh'=>$media->likes()->count()]);
+        'message'=>'Like Added!','refresh'=>$media->likes()->count()]);
        }
     }
     catch (\illuminate\Database\QueryException $e) {

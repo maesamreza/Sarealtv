@@ -126,9 +126,7 @@ class Messages extends Controller
         ->selectRaw("client_profiles.picture,
         client_profiles.account_type,
         client_profiles.gender,
-        client_profiles.country")
-         
-        ->get()
+        client_profiles.country")->get()
     ]);
 
 
