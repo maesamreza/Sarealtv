@@ -28,7 +28,7 @@ Route::get('fetch/{ownerId}/media/like/by/{clientId?}', [App\Http\Controllers\Sa
 Route::get('fetch/{ownerId}/media/like/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaILike']);
 Route::get('get/media/info/{mediaId}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getMediaById']);
 
-
+Route::post('email/{type}',[App\Http\Controllers\Api\AdminController::class,'emailVerify']);
 
 Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
 Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);

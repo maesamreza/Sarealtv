@@ -180,6 +180,75 @@ class AdminController extends Controller
     }
 
 
+
+    public function emailVerify(Request $request)
+    {
+
+        $type = ['verify' => 'clients'][request()->type];
+
+        $valid = Validator::make($request->all(), [
+            'token' => 'required|string|exists:password_resets,token',
+            'email' => 'required|email|exists:' . $type,
+        ]);
+
+        if ($valid->fails())
+            return response(['message' => 'Validation Error', 'error' => $valid->errors()->all()]);
+
+
+        $updatePassword = DB::table('password_resets')
+            ->where([
+                'email' => $request->email,
+                'token' => $request->token
+            ])
+            ->first();
+
+        if (!$updatePassword) {
+            return response(['error' => 'Invalid token!']);
+        }
+
+        $user = \App\Models\Api\Client::where('email',$request->email);
+       try{
+         if ($user->update(['email_verified_at' => now()]) && DB::table('password_resets')->where(['email' => $request->email])->delete()) {
+            if (auth()->guard('admin')->attempt(['email' =>$request->email]) && $token = auth()->guard('admin')->user()->createToken('uu4f3b5e03853b', ['admin'])->accessToken) {
+                $user = auth()->guard('admin')->user();
+                return response()->json(['status' => true, 'message' => 'Email Verified Successfully!', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'admin', 'email' => $user->email]], 200);
+                } 
+            return response(['status' => true, 'message' => 'email Verified!'], 200);
+           }
+    }
+    catch(\Throwable $th){
+
+
+    } 
+    }
+
+
+    static function verifyEmail($email){
+
+       try{
+        $token = rand(100000, 999999);
+
+        DB::table('password_resets')->insert([
+            'email' => $email,
+            'token' => $token,
+            'created_at' => Carbon::now()
+        ]);
+
+        Mail::send('email.forgetPassword', ['token' => $token], function ($message) use ($email) {
+            $message->to($email);
+            //$message->to('iirfanumer@gmail.com');
+            $message->subject('Email Verification');
+        });
+    
+    return true;}
+    catch(\Throwable $th){
+        return $th;
+        return false;
+    }
+
+    }
+
+
     static function checkModelForReset($hint, $email)
     {
 

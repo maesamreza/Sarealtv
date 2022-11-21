@@ -20,6 +20,7 @@ class ClientController extends Controller
         $validator = Validator::make($req->all(), [
 
             "email" => "required|unique:clients",
+            //'emailVerify' => 'required|email|exists:clients,email,email_verified_at,!NULL',
             // 'password' => 'required|confirmed|min:8',
             'password' => [
                 'required',
@@ -43,6 +44,27 @@ class ClientController extends Controller
             'password.regex' => 'password should contain atleat one uppercase and lowercase characters and number'
         ]);
         if ($validator->fails()) {
+
+/*
+            $errors = $validator->errors();
+            if ($errors->has('email') && $errors->has('emailVerify') && $errors->first('emailVerify') == "EmailNotVerified") {
+                try{
+
+                    if(\App\Http\Controllers\Api\AdminController::verifyEmail($req->email)){
+
+                    return response()->json(['status' => false, 'message' => 'Check Inbox to Verify Your Email'], 200);
+                    }
+                    else{
+                return response()->json(['status' => false, 'message' => 'Fail to send Verification Email!'], 200);
+
+                    }
+                }
+                catch(\Throwable $th){
+                return response()->json(['status' => false, 'message' => 'Email Is Not Verified'], 200);
+                }
+            }
+*/
+
             return response(['status' => false, 'errors' => $validator->errors()]);
         }
 
@@ -59,13 +81,30 @@ class ClientController extends Controller
         }
 
         if ($user->save() && $user->clientProfile()->create($profile)) {
-
+/*
             if (auth()->guard('client')->attempt(['email' => $req->email, 'password' => $req->password]) && $token = auth()->guard('client')->user()->createToken('uu4f3b5e03853b', ['client'])->accessToken) {
                 $user = auth()->guard('client')->user();
                 return response()->json(['status' => true, 'message' => 'Your Registration Completed..', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'client', 'email' => $user->email]], 200);
             } else {
                 return response()->json(['status' => true, 'message' => 'Your Registration Completed..'], 200);
+            }*/
+
+            try{
+
+                if(\App\Http\Controllers\Api\AdminController::verifyEmail($req->email)){
+
+                return response()->json(['status' => false, 'message' => 'Check Inbox to Verify Your Email'], 200);
+                }
+                else{
+            return response()->json(['status' => false, 'message' => 'Fail to send Verification Email!'], 200);
+
+                }
             }
+            catch(\Throwable $th){
+            return response()->json(['status' => false, 'message' => 'Email Is Not Verified'], 200);
+            }
+
+            
         } else {
             return response()->json(['status' => false, 'message' => 'Errors Occure During Registration..'], 500);
         }
@@ -80,16 +119,29 @@ class ClientController extends Controller
     public function login(Request $req)
     {
         $messages = array(
-            "email.exists" => "EmailNotValid",
+            "emailVerify.exists" => "EmailNotVerified",
         );
-        $valid = Validator::make($req->all(), ['email' => 'required|email|exists:clients,email', 'password' => 'required|string|min:8'], $messages);
+        $valid = Validator::make(array_merge($req->all(),['emailVerify'=>$req->email]), ['email' => 'required|email|exists:clients,email', 
+        'password' => 'required|string|min:8','emailVerify' => 'required|email|exists:clients,email,email_verified_at,!NULL'], $messages);
 
         if ($valid->fails()) {
 
             $errors = $valid->errors();
-            if ($errors->has('email') && $errors->first('email') == "EmailNotValid") {
+            if (!$errors->has('email') && $errors->has('emailVerify') && $errors->first('emailVerify') == "EmailNotVerified") {
+                try{
 
-                return response()->json(['status' => false, 'message' => 'Credentials Errors'], 200);
+                    if(\App\Http\Controllers\Api\AdminController::verifyEmail($req->email)){
+
+                    return response()->json(['status' => false, 'message' => 'Check Inbox to Verify Your Email'], 200);
+                    }
+                    else{
+                return response()->json(['status' => false, 'message' => 'Fail to send Verification Email!'], 200);
+
+                    }
+                }
+                catch(\Throwable $th){
+                return response()->json(['status' => false, 'message' => 'Email Is Not Verified'], 200);
+                }
             }
 
             return response()->json(['status' => false, 'message' => 'Input Validation Errors', "errors" => $errors]);
