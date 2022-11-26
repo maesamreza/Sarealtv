@@ -250,4 +250,44 @@ $uid = $user->id;
             return response()->json(['status' =>false, 'message' => 'Server Error Can\'t Update Your profile'], 500);
         }
     }
+
+
+
+
+    public function ClientList($clientId = false)
+    {
+        $user = Util::getUserDetail();
+
+        $clientId = ($user->role=='admin' && $clientId) ? $clientId :null;
+
+        $rules = ['id' => 'required|integer|exists:clients,id'];
+
+        $checkInputs = Validator::make(['id' => $clientId], $rules);
+
+        if ($checkInputs->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Param ID Not Valid!'
+            ], 422);
+        }
+
+
+        try {
+            $client = Client::find($clientId);
+            $clientList = $client
+                ->select('clients.*', 'client_profiles.picture', 'client_profiles.gender', 'client_profiles.account_type')
+                ->join('client_profiles', 'clients.id', 'client_profiles.client_id')
+                ->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'List of Registered Users!',
+                'clientList' => $clientList
+            ]);
+        } catch (\illuminate\Database\QueryException $e) {
+
+            return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+        }
+    }
+
+
 }

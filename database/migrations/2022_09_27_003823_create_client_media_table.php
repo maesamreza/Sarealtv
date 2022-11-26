@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('url');
             $table->integer('duration')->nullable();
             $table->enum('type',['image','video'])->default('image');
+            $table->id()->startingValue(111);
             $table->timestamps();
         });
     }

@@ -79,6 +79,14 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('inbox/list', [App\Http\Controllers\Messages::class, 'fetchChatings']);
     //<--end-->
 
+
+
+
+
+    Route::middleware('Admin')->group(function () {
+        Route::post('list/client', [ClientController::class, 'ClientList']);
+    });
+
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
     // authenticated staff routes here 
