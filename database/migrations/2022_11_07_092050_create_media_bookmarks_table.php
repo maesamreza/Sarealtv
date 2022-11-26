@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('media_bookmarks', function (Blueprint $table) {
             $table->unsignedBigInteger('client_id');
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('owner_id');
             $table->foreign('owner_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('client_media_id');

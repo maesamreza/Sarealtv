@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('media_comments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('client_id');
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('client_media_id');
             $table->foreign('client_media_id')->references('id')->on('client_media')->onDelete('cascade');
             $table->text('comments');

@@ -16,14 +16,15 @@ return new class extends Migration
         Schema::create('client_media', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('client_id');
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->string('title');
             $table->string('des')->nullable();
             $table->string('url');
             $table->integer('duration')->nullable();
             $table->enum('type',['image','video'])->default('image');
             $table->timestamps();
-        });
+
+            });
     }
 
     /**

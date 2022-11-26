@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('client_follower', function (Blueprint $table) {
             //$table->id();
             $table->unsignedBigInteger('client_id');
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('follower_id');
             $table->foreign('follower_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unique(['client_id','follower_id']);

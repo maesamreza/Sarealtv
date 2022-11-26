@@ -28,12 +28,13 @@ class ClientMediaController extends Controller
 
         $client = ($this->user->role == 'admin' && $clientId) ?
             Client::find($clientId) :
-            Client::find($this->user->id);
+             $user = ($this->user->role == 'admin')? $this->user:Client::find($this->user->id);
 
-            if ($client->media()->count()>3) {
+            if ($this->user->role != 'admin' && $client->media()->count()>3) {
                 return response()->json(['status' => false, 'message' => 'Only 4 Media Files Can Be Added!']);
             }
-
+        $maxSize =($this->user->role == 'admin')?"":"|max:21024";
+        $maxDur =($this->user->role == 'admin')?"":"|max:30";
         $rule = [
             'title' => 'required|string',
             'des' => 'nullable|string',
@@ -49,12 +50,12 @@ class ClientMediaController extends Controller
             $req->hasFile('media') &&
             in_array($req->file('media')->extension(), ['mp4', '3gp', 'mov', 'avi', 'webm'])
         ) {
-            $rule['media'] = $rule['media'] . ',webm,mp4,3gp,mov,avi|max:21024';
-            $rule['duration'] = 'required|integer|max:30';
+            $rule['media'] = $rule['media'] . ",webm,mp4,3gp,mov,avi $maxSize";
+            $rule['duration'] = "required|integer $maxDur";
             $data['type'] = 'video';
             $data['duration'] = $req->duration;
         } else {
-            $rule['media'] = $rule['media'] . '|max:1024';
+            $rule['media'] = $rule['media'].$maxSize;
         }
 
 
@@ -104,17 +105,48 @@ class ClientMediaController extends Controller
     }
 
     public function fetchAllMedia($clientId=false){
-$user = Util::getUserDetail();
+     $user = Util::getUserDetail();
 
- $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId; 
- $checkValid = Validator::make(['id'=>$clientId],['id'=>'required|integer|exists:clients,id']);
- if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
- $client = Client::with('clientProfile')->find($clientId);
- $wner =',"'.$client->name.'" as name,';
- $wner .='"'.$client->clientProfile->picture.'" as picture,';
- $wner .='"'.$client->clientProfile->gender.'" as gender,';
- $wner .='"'.$client->clientProfile->account_type.'" as account_type';
- $clientMedia = $client->media()
+      $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId; 
+      $inputs =['id'=>$clientId];
+      $rules =['id'=>'required|integer|exists:clients,id'];
+      $adminMedia =false;
+
+      $checkValid = Validator::make($inputs,$rules);
+      if($checkValid->fails())
+      {
+        
+        if($user->role =="admin"){
+            $checkValid = Validator::make($inputs,['id'=>'required|integer|exists:users,id']);
+          
+            if($checkValid->fails()){
+    
+                return response()->json(['status'=>false,'message'=>'ID is Not Valid']);
+          
+               } 
+           else{
+               $adminMedia =true;
+    
+            }
+              }
+        
+        
+        
+       if(!$adminMedia)
+        return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
+      
+    
+    
+      }
+      
+
+
+      $client = ($adminMedia)?\App\Models\User::with('clientProfile')->find($clientId):Client::with('clientProfile')->find($clientId);
+      $wner =',"'.$client->name.'" as name,';
+      $wner .='"'.$client->clientProfile->picture.'" as picture,';
+      $wner .='"'.$client->clientProfile->gender.'" as gender,';
+      $wner .='"'.$client->clientProfile->account_type.'" as account_type';
+      $clientMedia = $client->media()
  ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date'.$wner)
  ->get();
  return $clientMedia;

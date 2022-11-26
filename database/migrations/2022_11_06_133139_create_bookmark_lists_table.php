@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('bookmark_lists', function (Blueprint $table) {
            $table->id();
             $table->unsignedBigInteger('client_id');
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->string('title');
             $table->string('des')->nullable();
             $table->enum('type',['Private','Public']);

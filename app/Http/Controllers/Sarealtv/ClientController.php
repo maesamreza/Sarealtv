@@ -302,4 +302,30 @@ $uid = $user->id;
             return response()->json(['status' =>false, 'message' => 'Server Error Can\'t Update Your profile'], 500);
         }
     }
+
+
+
+
+    public function ClientList()
+    {
+        $user = Util::getUserDetail();
+
+        try {
+            $client = Client::query();
+            $clientList = $client
+                ->select('clients.*', 'client_profiles.picture', 'client_profiles.gender', 'client_profiles.account_type')
+                ->join('client_profiles', 'clients.id', 'client_profiles.client_id')
+                ->paginate(15);
+            return response()->json([
+                'status' => true,
+                'message' => 'List of Registered Users!',
+                'clientList' => $clientList
+            ]);
+        } catch (\illuminate\Database\QueryException $e) {
+
+            return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+        }
+    }
+
+
 }

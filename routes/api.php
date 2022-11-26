@@ -83,6 +83,14 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('inbox/list', [App\Http\Controllers\Messages::class, 'fetchChatings']);
     //<--end-->
 
+
+
+
+
+    Route::middleware('Admin')->group(function () {
+        Route::get('list/client', [ClientController::class, 'ClientList']);
+        });
+
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
     // authenticated staff routes here 
@@ -97,8 +105,8 @@ Route::post('admin/login', [adminController::class, 'login'])->name('adminLogin'
 
 Route::group(['prefix' => 'admin', 'middleware' => ['Admin']], function () {
     // authenticated staff routes here 
-    Route::post('/update/profile', [adminController::class, 'updateProfile'])->name('adminregister');
-    Route::get('dashboard', [adminController::class, 'adminDashboard']);
+    Route::post('/update/profile', [adminController::class, 'updateProfile'])->name('admin.update');
+    //Route::get('dashboard', [adminController::class, 'adminDashboard']);
 });
 
-Route::post('adminlogout', [adminController::class, 'adminlogout'])->name('adminlogout');
+//Route::post('adminlogout', [adminController::class, 'adminlogout'])->name('adminlogout');
