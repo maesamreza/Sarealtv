@@ -21,7 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'password','banner','picture'
     ];
 
     /**
@@ -32,6 +32,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verified_at'
     ];
 
     /**
@@ -46,7 +47,6 @@ class User extends Authenticatable
     
     public function clientProfile()
     {
-
         return $this->hasOne(\App\Models\ClientProfile::class,'client_id');
     }
 

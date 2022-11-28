@@ -54,7 +54,7 @@ class AdminController extends Controller
         $userUpdate = User::find($user->id);
 
         $rules = [
-            'name' => 'required|string|min:4',
+            'name' => 'nullable|string|min:4',
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024'
         ];
 
@@ -75,7 +75,8 @@ class AdminController extends Controller
             return response()->json(['status' => false, 'message' => 'Input Validation Errors', "inputErrors" => $valid->errors()], 500);
         }
 
-        $data = ['name' => $req->name];
+        $data = [];
+        if ($req->has('name'))  $data['name'] = $req->name;
         if ($req->has('email'))  $data['email'] = $req->email;
         if ($req->has('password')) $data['password'] = Hash::make($req->password);
 
@@ -268,9 +269,9 @@ class AdminController extends Controller
 
 
     public function getMyDetails()
-    {
+    {$user= Util::getUserDetail();
 
-        return Util::getUserDetail()->load('clientProfile');
+        return ($user->role =="admin")?$user:$user->load('clientProfile');
     }
 
 
@@ -283,7 +284,7 @@ class AdminController extends Controller
         if ($checkValid->fails())
             return response(['status' => false, 'message' => 'Profile ID is Not Valid ']);
 
-        $clientData = Client::find($id)->load('clientProfile');
+        $clientData = ($user->role =="admin")? $user:Client::find($id)->load('clientProfile');
         $clientData->CurrentStatus = $clientData->currentStatus();
         if($user !=null){
            $clientData->is_following = $clientData->followers()->where('id',$user->id)->exists();
