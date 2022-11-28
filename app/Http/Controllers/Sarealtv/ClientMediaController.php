@@ -39,11 +39,12 @@ class ClientMediaController extends Controller
             'title' => 'required|string',
             'des' => 'nullable|string',
             'media' => 'required|mimes:jpeg,jpg,gif,png',
+            'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
         ];
         $data = [
             'title' => $req->title,
             'des' => $req->des,
-
+             'subDes'=>$req->subDes
         ];
 
         if (
@@ -70,18 +71,20 @@ class ClientMediaController extends Controller
 
             $file = $req->file('media');
             $type = $file->extension();
-
-            // if (in_array($type, ['mp4', '3gp', 'mov', 'avi']) && !$req->duration) {
-            //     $error = new stdClass;
-
-            //     $error->duration = ['duration fields is required with video'];
-            //     return $error;
-            //     return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $error]);
-            // }
-           $fid="f".$this->user->id;
+            $fid="f".$this->user->id;
             $data['url'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
             $file->storeAs("public/media/",$data['url']);
             $data['url']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['url'];
+        }
+
+        if ($req->hasFile('thumbs')) {
+
+            $file = $req->file('thumbs');
+            $type = $file->extension();
+            $fid="f".$this->user->id;
+            $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+            $file->storeAs("public/media/",$data['thumbs']);
+            $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
         }
 
         try {

@@ -20,7 +20,7 @@ class ClientMedia extends Model
         'des',
         'url',
         'duration',
-        'type'
+        'type','subDes','thumbs'
     ];
 
     
