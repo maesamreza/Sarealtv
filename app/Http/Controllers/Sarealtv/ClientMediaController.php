@@ -116,7 +116,7 @@ class ClientMediaController extends Controller
       if($checkValid->fails())
       {
         
-        if($user->role =="admin"){
+        if($user && $user->role =="admin"){
             $checkValid = Validator::make($inputs,['id'=>'required|integer|exists:users,id']);
           
             if($checkValid->fails()){
@@ -141,15 +141,24 @@ class ClientMediaController extends Controller
       
 
 
-      $client = ($adminMedia)?\App\Models\User::with('clientProfile')->find($clientId):Client::with('clientProfile')->find($clientId);
+      $client = ($adminMedia)?\App\Models\User::find($clientId):Client::with('clientProfile')->find($clientId);
+      if($user && $user->role !="admin"){
       $wner =',"'.$client->name.'" as name,';
       $wner .='"'.$client->clientProfile->picture.'" as picture,';
       $wner .='"'.$client->clientProfile->gender.'" as gender,';
       $wner .='"'.$client->clientProfile->account_type.'" as account_type';
+      }
+      else{
+
+        $wner=null;
+      }
       $clientMedia = $client->media()
  ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date'.$wner)
  ->get();
- return $clientMedia;
+
+ 
+   return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
+
     }
 
 

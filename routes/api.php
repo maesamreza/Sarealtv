@@ -89,6 +89,9 @@ Route::middleware('AdminOrClient')->group(function () {
 
     Route::middleware('Admin')->group(function () {
         Route::get('list/client', [ClientController::class, 'ClientList']);
+        Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');
+        Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
+        
         });
 
 });

@@ -148,11 +148,11 @@ class ClientController extends Controller
         }
 
 
-        if (auth()->guard('client')->attempt(['email' => $req->email, 'password' => $req->password]) && $token = auth()->guard('client')->user()->createToken('uu4f3b5e03853b', ['client'])->accessToken) {
+        if (auth()->guard('client')->attempt(['email' => $req->email, 'password' => $req->password,'is_active'=>1]) && $token = auth()->guard('client')->user()->createToken('uu4f3b5e03853b', ['client'])->accessToken) {
             $user = auth()->guard('client')->user();
             return response()->json(['status' => true, 'message' => 'Login successfully', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'client', 'email' => $user->email]], 200);
         } else {
-            return response()->json(['status' => false, 'message' => 'Credentials Errors'], 500);
+            return response()->json(['status' => false, 'message' => 'Credentials Errors Or Blocked'], 500);
         }
     }
 
@@ -298,7 +298,6 @@ $uid = $user->id;
 
             return response()->json(['status' =>true, 'message' => 'Your profile Updated successfully'], 200);
         } else {
-
             return response()->json(['status' =>false, 'message' => 'Server Error Can\'t Update Your profile'], 500);
         }
     }
@@ -327,5 +326,44 @@ $uid = $user->id;
         }
     }
 
+
+    public function removeClient($id){
+
+       try{ $client =(intval($id))?Client::find($id):null;
+        if($client && $client->delete()){
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile Deleted!']);}
+            else{
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Not Valid ID']);  
+            }}
+                catch (\illuminate\Database\QueryException $e) {
+
+                    return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+                } 
+    }
+
+    public function setActive($status,$id){
+
+
+        $state = ['active'=>'1','block'=>'0'];
+
+        if(!in_array($status,array_keys($state))){
+            return response()->json(['status' => false, 'message' =>'Not Valid Url']);
+         }
+    
+
+        try{ $client =(intval($id))?Client::find($id):null;
+         if($client && $client->update(['is_active'=>ucfirst($state[$status])])){
+             return response()->json([
+                 'status' => true,
+                 'message' => "Profile $status!"]);}}
+                 catch(\illuminate\Database\QueryException $e) {
+ 
+                     return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+                 } 
+     }
 
 }
