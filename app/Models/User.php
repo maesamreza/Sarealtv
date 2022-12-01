@@ -53,7 +53,7 @@ class User extends Authenticatable
     public function media()
     {
 
-        return $this->hasMany(\App\Models\ClientMedia::class,'client_id');
+        return $this->hasMany(AdminMedia::class);
     }
 
     public function likes()

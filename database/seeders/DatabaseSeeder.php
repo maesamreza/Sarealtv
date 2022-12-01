@@ -14,24 +14,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-    //   $media =\App\Models\Api\Client::find(10);
-    //   return dd($media->likeMedia()->count());
-
-        $admin =\App\Models\User::create([
+            \App\Models\User::create([
                 'name' => 'Test User',
                 'email' => 'sarealtv@mail.com',
                 'password'=>\Hash::make('123456789')
             ]);
 
-            $profile =['client_id'=>1];
-            $profile['DOB']=date('Y-m-d H:i:s' ,strtotime("1999-8-12"));
-            $profile['country']="Pakistan";
-            $admin->clientProfile()->create($profile);   
-        // \App\Models\User::factory(10)->create();
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-    }
+            \App\Models\MediaType::insert([
+           ['name'=>'Trailers'],
+           ['name'=>'Tv Shows'],
+           ['name'=>'Movies']
+            ]);
+
+            \App\Models\AdminMediaCategory::insert([
+                
+                ['media_type_id'=>1,'category'=>'Movies'],
+                ['media_type_id'=>1,'category'=>'Tv Shows'],
+                ['media_type_id'=>2,'category'=>'Popular'],
+                ['media_type_id'=>2,'category'=>'Action'],
+                ['media_type_id'=>2,'category'=>'Comedy'],
+                ['media_type_id'=>3,'category'=>'Popular'],
+                ['media_type_id'=>3,'category'=>'Action'],
+                ['media_type_id'=>3,'category'=>'Comedy'],
+            ]);}
+
+
+            public function getType(){
+                
+                $types =\App\Models\MediaType::all(); 
+            }
 }

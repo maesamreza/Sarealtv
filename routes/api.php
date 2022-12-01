@@ -86,11 +86,17 @@ Route::middleware('AdminOrClient')->group(function () {
 
 
 
+        
 
+
+
+    Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
+        
     Route::middleware('Admin')->group(function () {
         Route::get('list/client', [ClientController::class, 'ClientList']);
         Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');
         Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
+        Route::post('admin/add/media', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
         
         });
 
