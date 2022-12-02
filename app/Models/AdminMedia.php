@@ -45,7 +45,14 @@ class AdminMedia extends Model
     {
 
         if($value) return $query->where('title','LIKE',"%%$value%%");
-    }    
+    }   
+    
+    public function relatedMedia($series=false,){
+
+        return self::guery();
+
+
+    }
 
     public function likes(){
         return $this->hasMany(MediaLike::class);

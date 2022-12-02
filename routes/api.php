@@ -97,6 +97,7 @@ Route::middleware('AdminOrClient')->group(function () {
         Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');
         Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
         Route::post('admin/add/media', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
+        Route::post('admin/get/cate', [App\Http\Controllers\Api\AdminMedia::class, 'getCate']);
         
         });
 

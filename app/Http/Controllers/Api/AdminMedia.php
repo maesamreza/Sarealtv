@@ -187,4 +187,38 @@ class AdminMedia extends Controller
        }
     }
 
+
+
+    public function getMediaById($MediaId){
+        //$user = Util::getUserDetail();
+      
+       $checkValid = Validator::make(['id'=>$MediaId],['id'=>'required|integer|exists:admin_media,id']);
+       if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Public']);
+  
+       $clientMedia = Media::select('admin_media.*','media_types.name as category','admin_media_categories.category as subCategory'
+     ,'media_filter.season','media_filter.episode')
+     ->leftjoin('media_filter','admin_media.id','media_filter.admin_media_id')
+     ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
+     ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
+     ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
+     ->where('id',$MediaId)->first();
+       return response()->json(['status'=>true,'message'=>'Media Details','media'=>$clientMedia]);
+
+          }
+
+          public function getCate(){
+
+            try{
+
+                $record = \App\Models\MediaType::with('categories')->get();
+                return response()->json(['status'=>true,'data'=>$record]);
+
+            }
+            catch(\Throwable $th){
+ //return $th->getMessage();
+                return response()->json(['status'=>false,'data'=>[]]);
+            }
+          }
+
+
 }

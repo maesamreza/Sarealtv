@@ -12,6 +12,6 @@ class MediaType extends Model
     public $timestamps = false;
     public function categories(){
         return $this->hasMany(\App\Models\AdminMediaCategory::class)
-        ->select('id','category');
+        ->select('id','category','media_type_id');
     }
 }
