@@ -40,7 +40,12 @@ class AdminMedia extends Model
 
      return $this->belongsToMany(self::class,'media_filter');
       
-      }    
+      }
+      public function scopeSearch($query, $value)
+    {
+
+        if($value) return $query->where('title','LIKE',"%%$value%%");
+    }    
 
     public function likes(){
         return $this->hasMany(MediaLike::class);

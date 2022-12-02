@@ -19,7 +19,6 @@ class AdminMedia extends Controller
         $mainType = $dummy[0];
         $mainType = (!isset($mainType[0]))?'Videos':$mainType[0];
 
-        return $mainType;
         $client = ($this->user->role == 'admin' && $clientId) ?
             Client::find($clientId) :
              $user = ($this->user->role == 'admin')? $this->user:Client::find($this->user->id);
@@ -43,10 +42,11 @@ class AdminMedia extends Controller
              'subDes'=>$req->subDes,
              'type'=>$mainType,
              ];
-             $filter =['media_type_id'=>$data['type']
+             $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
+             $filter =['media_type_id'=>$typeID
              ,'admin_media_category_id'=>\App\Models\AdminMediaCategory::firstOrCreate([
              'category'=>$req->category,
-             'media_type_id'=>\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id
+             'media_type_id'=>$typeID
              ])->id];
              if(stripos($req->type,"series")!==false){
                 $rule=array_merge( $rule, ['season'=>'required|integer',
@@ -95,8 +95,6 @@ class AdminMedia extends Controller
             $file->storeAs("public/media/",$data['thumbs']);
             $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
         }
-
-        return $data;
         try {
             $media = $client->media()->create($data);
             
@@ -109,16 +107,51 @@ class AdminMedia extends Controller
 
 
 
-    public function fetchAllMedia($type,$cate=false,$season=false,$title=false){
+    public function fetchAllMedia($type,$cate=false){
+        $title=request()->search??NULL;
+        $season=request()->season??NULL;
         $user = Util::getUserDetail();
         $typeID =  \App\Models\MediaType::where('name',str_replace('_',' ',$type))->first()?->id;
-        if(!$typeID){
+        $client =$user;
+         
+        $wner =',"'.$client->name.'" as name';
 
-            return response()->json(['status'=>false,'message'=>"$type Not Valid"]);
+        if(!$cate){
+            $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->take(5)
+            ->get();
+            $clientMedia =new \Illuminate\Database\Eloquent\Collection;
+
+            foreach($cateLimit as $cate){
+                $cid =$cate->id;
+                $clientMedia = $clientMedia->merge(Media::whereHas('filterMedia',function($media) use($typeID,$cid){
+                    $media->where('media_filter.media_type_id',$typeID)
+                    ->where('media_filter.admin_media_category_id',$cid);})
+                    ->select('admin_media.*','media_types.name as category','admin_media_categories.category as subCategory'
+                 ,'media_filter.season','media_filter.episode')
+                 ->leftjoin('media_filter','admin_media.id','media_filter.admin_media_id')
+                 ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
+                 ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
+                 ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date'.$wner)
+                 ->take(4)->get());
+
+
+            }
+
+            return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
+   
+
+        }
+        else{
+        $cateID = ($cate)?\App\Models\AdminMediaCategory::where('media_type_id',$typeID)
+        ->where('category',str_replace('_',' ',$cate))->first()?->id:null;
+
+        if(!$typeID || ($cate && !$cateID)){
+
+            return response()->json(['status'=>false,'message'=>"Not Valid URI"]);
          
         }
 
-          /*
+        /*
          $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId; 
          $inputs =['id'=>$clientId];
          $rules =['id'=>'required|integer|exists:clients,id'];
@@ -130,35 +163,28 @@ class AdminMedia extends Controller
            
            return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
          
-       
-       
-         }
+          }
          
-   */
+        */
    
-         $client =$user;
-         
-         $wner =',"'.$client->name.'" as name';
-        //  $wner .='"'.$client->clientProfile->picture.'" as picture,';
-        //  $wner .='"'.$client->clientProfile->gender.'" as gender,'; ($typeID,$cate,$season,$title
-        //  $wner .='"'.$client->clientProfile->account_type.'" as account_type';
-        //$Media=new Media;
-         $clientMedia = Media::whereHas('filterMedia',function($media) use($typeID,$cate,$season,$title){
-            if($typeID) $media->where('media_filter.media_type_id',$typeID);
-            if($cate) $media->where('media_filter.admin_media_category_id',$cate);
-            if($season) $media->where('media_filter.season',$season);
-            if($title) $media->where('admin_media.title','LIKE',"%%$title%%");
+       
 
-         })->select('admin_media.*')
+         $clientMedia = Media::whereHas('filterMedia',function($media) use($typeID,$cateID,$season,$title){
+            if($typeID) $media->where('media_filter.media_type_id',$typeID);
+            if($cateID ) $media->where('media_filter.admin_media_category_id',$cateID);
+            if($season) $media->where('media_filter.season',$season);})->select('admin_media.*','media_types.name as category','admin_media_categories.category as subCategory'
+         ,'media_filter.season','media_filter.episode')
+         ->leftjoin('media_filter','admin_media.id','media_filter.admin_media_id')
+         ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
+         ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
          ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date'.$wner)
-         ->get();//->paginate(15);
+         ->search($title)
+         ->paginate(15);
    
-    return $clientMedia;
+
       return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
    
        }
-   
-   
-
+    }
 
 }
