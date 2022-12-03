@@ -91,7 +91,9 @@ Route::middleware('AdminOrClient')->group(function () {
 
 
     Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
-        
+    Route::post('admin/media/add/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'addComment']);
+    Route::delete('admin/media/remove/comments/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
+   
     Route::middleware('Admin')->group(function () {
         Route::get('list/client', [ClientController::class, 'ClientList']);
         Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');

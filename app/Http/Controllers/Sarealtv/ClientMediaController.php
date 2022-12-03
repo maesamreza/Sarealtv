@@ -113,38 +113,16 @@ class ClientMediaController extends Controller
       $clientId =(!$clientId && $user != null || $user != null && $user->role =="client" && !$clientId)?$user->id:$clientId; 
       $inputs =['id'=>$clientId];
       $rules =['id'=>'required|integer|exists:clients,id'];
-      $adminMedia =false;
-
+     
       $checkValid = Validator::make($inputs,$rules);
       if($checkValid->fails())
       {
-        
-        if($user && $user->role =="admin"){
-            $checkValid = Validator::make($inputs,['id'=>'required|integer|exists:users,id']);
-          
-            if($checkValid->fails()){
-    
-                return response()->json(['status'=>false,'message'=>'ID is Not Valid']);
-          
-               } 
-           else{
-               $adminMedia =true;
-    
-            }
-              }
-        
-        
-        
-       if(!$adminMedia)
         return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In']);
-      
-    
-    
       }
       
 
 
-      $client = ($adminMedia)?\App\Models\User::find($clientId):Client::with('clientProfile')->find($clientId);
+      $client = Client::with('clientProfile')->find($clientId);
       if($user && $user->role !="admin"){
       $wner =',"'.$client->name.'" as name,';
       $wner .='"'.$client->clientProfile->picture.'" as picture,';
@@ -180,10 +158,10 @@ class ClientMediaController extends Controller
          $checkValid = Validator::make($inputs,$rules);
          if($checkValid->fails()) return response()->json(['status'=>false,'message'=>'ID is Not Valid Or Not Log In','errors'=>$checkValid->errors()]);
          $client = (!$clientId)?$user:Client::/*with('clientProfile')->*/find($clientId);
-        //  $wner =',"'.$client->name.'" as name,';
-        //  $wner .='"'.$client->clientProfile->picture.'" as picture,';
-        //  $wner .='"'.$client->clientProfile->gender.'" as gender,';
-        //  $wner .='"'.$client->clientProfile->account_type.'" as account_type';
+         // $wner =',"'.$client->name.'" as name,';
+         // $wner .='"'.$client->clientProfile->picture.'" as picture,';
+         // $wner .='"'.$client->clientProfile->gender.'" as gender,';
+         // $wner .='"'.$client->clientProfile->account_type.'" as account_type';
          $clientMedia = $client->likeMedia($ownerId)
          ->selectRaw('DATE_FORMAT(client_media.updated_at, "%d %b %y") as date'/*.$wner*/)
          ->get();

@@ -49,7 +49,7 @@ class AdminMedia extends Model
     
     public function relatedMedia($series=false,){
 
-        return self::guery();
+        return self::query();
 
 
     }
@@ -59,7 +59,7 @@ class AdminMedia extends Model
     }
 
     public function comments(){
-        return $this->hasMany(MediaComments::class);
+        return $this->hasMany(\App\Models\Admin\AdminComments::class);
     }
 
     
