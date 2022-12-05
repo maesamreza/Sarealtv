@@ -5,13 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Controllers\Api\Tools\Util;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 
 class AdminMedia extends Model
 {
 
 
+    protected $withCount = ['comments','likes'];
     public $visitor=0;
-    //protected $withCount = ['comments','likes'];
 
     protected $fillable = [
         'title',
@@ -27,7 +29,7 @@ class AdminMedia extends Model
         'created_at',
         'updated_at', "pivot"
     ];
-   // protected $appends = ['is_like'];
+    protected $appends = ['is_like'];
 
         function __construct() {
             $this->visitor=Util::getUserDetail()->id??0;
@@ -47,15 +49,15 @@ class AdminMedia extends Model
         if($value) return $query->where('title','LIKE',"%%$value%%");
     }   
     
-    public function relatedMedia($series=false,){
+    public function relatedMedia($series=false){
 
-        return self::query();
+       // return self::query();
 
 
     }
 
     public function likes(){
-        return $this->hasMany(MediaLike::class);
+        return $this->hasMany(\App\Models\Admin\AdminMediaLike::class);
     }
 
     public function comments(){

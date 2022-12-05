@@ -110,11 +110,11 @@ class AdminMedia extends Controller
     public function fetchAllMedia($type,$cate=false){
         $title=request()->search??NULL;
         $season=request()->season??NULL;
-        $user = Util::getUserDetail();
+        //$user = Util::getUserDetail();
         $typeID =  \App\Models\MediaType::where('name',str_replace('_',' ',$type))->first()?->id;
-        $client =$user;
+        //$client =$user;
          
-        $wner =',"'.$client->name.'" as name';
+        $wner =',"Admin" as name';
 
         if(!$cate){
             $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->take(5)

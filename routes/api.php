@@ -34,7 +34,7 @@ Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
 Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);
 
 
-
+Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
 Route::get('admin/get/media/{MediaId}', [App\Http\Controllers\Api\AdminMedia::class, 'getMediaById']);
 Route::get('media/get/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'fetchComments']);
 Route::get('admin/media/get/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'fetchComments']);
@@ -50,6 +50,9 @@ Route::middleware('AdminOrClient')->group(function () {
 
     Route::get('media/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'like']);
     Route::get('media/count/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'getLikes']);
+    Route::get('admin/media/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class, 'like']);
+    Route::get('admin/media/count/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class,'getLikes']);
+
 
     Route::post('media/add/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'addComment']);
     Route::delete('media/remove/comments/{id}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'removeComment']);
@@ -97,7 +100,6 @@ Route::middleware('AdminOrClient')->group(function () {
 
 
 
-    Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
     Route::post('admin/media/add/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'addComment']);
     Route::delete('admin/media/remove/comments/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
     Route::post('admin/media/add/comment/replay/{commentId}', [\App\Http\Controllers\Api\MediaComments::class, 'addCommentReplay']);
