@@ -201,7 +201,7 @@ class AdminMedia extends Controller
      ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
      ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
      ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
-     ->where('id',$MediaId)->first();
+     ->where('admin_media.id',$MediaId)->first();
        return response()->json(['status'=>true,'message'=>'Media Details','media'=>$clientMedia]);
 
           }

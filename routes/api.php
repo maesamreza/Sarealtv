@@ -33,7 +33,14 @@ Route::post('email/{type}',[App\Http\Controllers\Api\AdminController::class,'ema
 Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
 Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);
 
+
+
+Route::get('admin/get/media/{MediaId}', [App\Http\Controllers\Api\AdminMedia::class, 'getMediaById']);
 Route::get('media/get/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'fetchComments']);
+Route::get('admin/media/get/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'fetchComments']);
+Route::get('admin/media/get/comment/replay/{commentId}', [\App\Http\Controllers\Api\MediaComments::class,'fetchCommentReplays']);
+Route::post('admin/get/cate', [App\Http\Controllers\Api\AdminMedia::class, 'getCate']);
+
 
 Route::middleware('AdminOrClient')->group(function () {
     Route::get('/user', [adminController::class, 'getMyDetails']);
@@ -93,13 +100,14 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
     Route::post('admin/media/add/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'addComment']);
     Route::delete('admin/media/remove/comments/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
-   
+    Route::post('admin/media/add/comment/replay/{commentId}', [\App\Http\Controllers\Api\MediaComments::class, 'addCommentReplay']);
+    Route::delete('admin/media/remove/comment/replay/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
+    
     Route::middleware('Admin')->group(function () {
         Route::get('list/client', [ClientController::class, 'ClientList']);
         Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');
         Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
         Route::post('admin/add/media', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
-        Route::post('admin/get/cate', [App\Http\Controllers\Api\AdminMedia::class, 'getCate']);
         
         });
 
