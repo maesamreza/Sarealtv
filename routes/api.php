@@ -39,7 +39,7 @@ Route::get('admin/get/media/{MediaId}', [App\Http\Controllers\Api\AdminMedia::cl
 Route::get('media/get/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'fetchComments']);
 Route::get('admin/media/get/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'fetchComments']);
 Route::get('admin/media/get/comment/replay/{commentId}', [\App\Http\Controllers\Api\MediaComments::class,'fetchCommentReplays']);
-Route::post('admin/get/cate', [App\Http\Controllers\Api\AdminMedia::class, 'getCate']);
+Route::post('admin/get/cate/{category?}', [App\Http\Controllers\Api\AdminMedia::class, 'getCate']);
 
 
 Route::middleware('AdminOrClient')->group(function () {

@@ -14,4 +14,11 @@ class MediaType extends Model
         return $this->hasMany(\App\Models\AdminMediaCategory::class)
         ->select('id','category','media_type_id');
     }
+
+    public function scopeCategory($query, $value)
+    {
+
+        if($value) return $query->where('name',$value);
+    }   
+    
 }

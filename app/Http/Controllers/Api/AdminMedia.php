@@ -26,8 +26,8 @@ class AdminMedia extends Controller
             if ($this->user->role != 'admin' && $client->media()->count()>3) {
                 return response()->json(['status' => false, 'message' => 'Only 4 Media Files Can Be Added!']);
             }
-        $maxSize =($req->type == 'trailers')?"":"|max:21024";
-        $maxDur =($req->type == 'trailers')?"":"|max:30";
+        $maxSize =($req->type == 'trailers')?"|max:21024":"";
+        $maxDur =($req->type == 'trailers')?"|max:30":"";
         $rule = [
             'title' => 'required|string',
             'des' => 'nullable|string',
@@ -132,6 +132,7 @@ class AdminMedia extends Controller
                  ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
                  ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
                  ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date'.$wner)
+                 ->withCount('comments','likes')
                  ->take(4)->get());
 
 
@@ -178,7 +179,7 @@ class AdminMedia extends Controller
          ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
          ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
          ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date'.$wner)
-         ->search($title)
+         ->search($title)->withCount('comments','likes')
          ->paginate(15);
    
 
@@ -201,16 +202,16 @@ class AdminMedia extends Controller
      ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
      ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
      ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
-     ->where('admin_media.id',$MediaId)->first();
+     ->where('admin_media.id',$MediaId)->withCount('comments','likes')->first();
        return response()->json(['status'=>true,'message'=>'Media Details','media'=>$clientMedia]);
 
           }
 
-          public function getCate(){
+          public function getCate($category=false){
 
             try{
 
-                $record = \App\Models\MediaType::with('categories')->get();
+                $record = \App\Models\MediaType::with('categories')->category(str_replace('_',' ',$category))->get();
                 return response()->json(['status'=>true,'data'=>$record]);
 
             }
