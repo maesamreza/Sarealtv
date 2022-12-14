@@ -88,7 +88,7 @@ class Followers extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => "You've Unfollowed $client->name !"
+                'message' => "You've Unfollowed $client->name!"
             ]);
         } catch (\illuminate\Database\QueryException $e) {
 

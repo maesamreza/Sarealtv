@@ -10,15 +10,14 @@ use Validator;
 class AdminMedia extends Controller
 {
 
-    public function addMedia(Request $req, $clientId = false)
+    public function addMedia(Request $req, $seriesID = false)
     {
         $this->user = Util::getUserDetail();
-
+        
         preg_match_all("/movies|trailers|series/i", $req->type, $dummy);
-
-        $mainType = $dummy[0];
+        $mainType =($seriesID)?"series":$dummy[0];
         $mainType = (!isset($mainType[0]))?'Videos':$mainType[0];
-
+        /*
         $client = ($this->user->role == 'admin' && $clientId) ?
             Client::find($clientId) :
              $user = ($this->user->role == 'admin')? $this->user:Client::find($this->user->id);
@@ -26,6 +25,7 @@ class AdminMedia extends Controller
             if ($this->user->role != 'admin' && $client->media()->count()>3) {
                 return response()->json(['status' => false, 'message' => 'Only 4 Media Files Can Be Added!']);
             }
+            */
         $maxSize =($req->type == 'trailers')?"|max:21024":"";
         $maxDur =($req->type == 'trailers')?"|max:30":"";
         $rule = [
@@ -42,18 +42,25 @@ class AdminMedia extends Controller
              'subDes'=>$req->subDes,
              'type'=>$mainType,
              ];
-             $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
-             $filter =['media_type_id'=>$typeID
-             ,'admin_media_category_id'=>\App\Models\AdminMediaCategory::firstOrCreate([
-             'category'=>$req->category,
-             'media_type_id'=>$typeID
-             ])->id];
+            
+           $seriesInfo =[];
+             
              if(stripos($req->type,"series")!==false){
-                $rule=array_merge( $rule, ['season'=>'required|integer',
+                $rule=array_merge(\Arr::except($rule,['type','category']),['season'=>'required|integer',
                     'episode'=>'required|integer'
-                   ]);
+                    ,'series_id'=>"required|integer|exists:series,id,unique:series,id,season,{$req->season},episode,{$req->episode}"
+                     ]);
+
                  $filter['season']=$req->season;
                  $filter['episode']=$req->episode;
+                }
+                else{
+                     $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
+                     $filter =['media_type_id'=>$typeID
+                    ,'admin_media_category_id'=>\App\Models\AdminMediaCategory::firstOrCreate([
+                    'category'=>$req->category,
+                    'media_type_id'=>$typeID
+                    ])->id];
                 }
             
         if (
@@ -75,6 +82,14 @@ class AdminMedia extends Controller
 
             return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $checkValid->errors()],422);
         }
+        else if(!$checkValid->fails() && stripos($req->type,"series")!==false) {
+            $series = \App\Models\Series::find($req->series_id);
+
+            $typeID=$series->media_type_id;
+
+           $filter =['media_type_id'=>$typeID
+           ,'admin_media_category_id'=>$series->admin_media_category_id];
+          }
 
         if ($req->hasFile('media')) {
 
@@ -99,10 +114,21 @@ class AdminMedia extends Controller
             $media = $client->media()->create($data);
             
             $media->filterMedia()->attach([$media->id=> $filter]);
+            if($req->has('series_id')){
+
+                $seriesInfo =array_merge($filter,['series_id'=>$req->series_id]);
+                $media->filterSeries()->attach([$media->id=>$seriesInfo]);
+            }
             return response()->json(['status' =>true, 'message' => 'Media Added!']);
         } catch (\illuminate\Database\QueryException $e) {
-            return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
-        }
+
+            $errorCode = $e->errorInfo[1];
+
+            if ($errorCode == 1062)
+                return response()->json(['status' =>false, 'message' =>'This Episode Allready Exists']);
+
+                return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+            }
     }
 
 
@@ -219,6 +245,52 @@ class AdminMedia extends Controller
  //return $th->getMessage();
                 return response()->json(['status'=>false,'data'=>[]]);
             }
+          }
+
+
+          public function addSeries(Request $req){
+
+            $rules =['title'=>'required|string|unique:series,title',
+            'des'=>'required|string','subDes'=>'required|string',
+            'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
+            'type'=>'required|string',
+            'category'=>'required|string'];
+            $validInput = Validator::make($req->all(),$rules);
+            if($validInput->fails()){
+
+                return response()->json(['status'=>false,
+                'message'=>'Some fields is Not Valid','errors'=>$validInput->errors()],422);
+            }
+            
+            $data =array_intersect_key($req->all(),['title'=>'','des'=>'','subDes'=>'']);
+            if ($req->hasFile('thumbs')) {
+
+                $file = $req->file('thumbs');
+                $type = $file->extension();
+                $fid="f1";
+                $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+                $file->storeAs("public/media/",$data['thumbs']);
+                $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
+            }
+
+            try{
+
+                $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
+                $data['media_type_id']=$typeID;
+                $data['admin_media_category_id']=\App\Models\AdminMediaCategory::firstOrCreate([
+               'category'=>$req->category,
+               'media_type_id'=>$typeID
+               ])->id;
+
+                \App\Models\Series::create($data);
+                return response()->json(['status'=>true,
+                'message'=>'Series Added']);
+            }
+            catch(\Throwable $th){ 
+                return response()->json(['status'=>false,
+                'message'=>'Fails to add Series'],500);
+             }
+
           }
 
 

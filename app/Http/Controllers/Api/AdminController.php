@@ -299,9 +299,9 @@ class AdminController extends Controller
 
     public function findAccountByKey($searchKey)
     {
-        $checkValid = Validator::make(['search' => $searchKey], ['search' => 'required|string|min:2']);
+        $checkValid = Validator::make(['search' => $searchKey], ['search' => 'required|string|min:1']);
         if ($checkValid->fails())
-            return response(['status' => false, 'message' => 'Search Key is Not Valid ']);
+            return response(['status' => false, 'message' => 'Search Key is Required']);
 try{
         $clientData = Client::where('name','LIKE',"%%$searchKey%%")
         ->select('clients.id','clients.name','client_profiles.picture','client_profiles.gender','client_profiles.account_type')

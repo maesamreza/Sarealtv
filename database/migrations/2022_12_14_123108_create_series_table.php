@@ -13,19 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('admin_media', function (Blueprint $table) {
+        Schema::create('series', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->string('title');
             $table->string('des')->nullable();
             $table->string('subDes')->nullable();
-            $table->string('url');
-            $table->integer('duration')->nullable();
-            $table->enum('type',['images','videos','movies','trailers','series']);
+            $table->unsignedBigInteger('admin_media_category_id');
+            $table->unsignedBigInteger('media_type_id');
             $table->string('thumbs')->nullable(); 
             $table->timestamps();
-
             });
     }
 
@@ -36,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('series');
     }
 };

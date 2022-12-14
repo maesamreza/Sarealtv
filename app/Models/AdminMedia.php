@@ -43,6 +43,11 @@ class AdminMedia extends Model
      return $this->belongsToMany(self::class,'media_filter');
       
       }
+      public function filterSeries($type=false,$cate=false,$season=false,$title=false){
+
+        return $this->belongsToMany(self::class,'series_media');
+         
+         }
       public function scopeSearch($query, $value)
     {
 
