@@ -55,7 +55,11 @@ class AdminMedia extends Controller
              if(stripos($req->type,"series")!==false || $req->has('series_id')){
                 $rule=array_merge(\Arr::except($rule,['type','category']),['season'=>'required|integer',
                     'episode'=>'required|integer'
-                    ,'series_id'=>"required|integer|exists:series,id"
+                    ,'series_id'=>["required","integer","exists:series,id",
+                   
+                    \Illuminate\Validation\Rule::unique('series_media','series_id')
+                   ->where('season',$req->season)->where('episode',$req->episode)
+                   ]
                      ]);
 
                  $filter['season']=$req->season;
@@ -84,7 +88,8 @@ class AdminMedia extends Controller
         }
 
 
-        $checkValid = Validator::make($req->all(), $rule);
+        $checkValid = Validator::make($req->all(), $rule, [
+            'series_id.unique' => 'This Episode Allready Exists']);
 
         if ($checkValid->fails()) {
 
