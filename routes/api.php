@@ -111,6 +111,10 @@ Route::middleware('AdminOrClient')->group(function () {
         Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
         Route::post('admin/add/media/{seriesID?}', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
         Route::post('admin/add/series', [App\Http\Controllers\Api\AdminMedia::class, 'addSeries']);
+        Route::get('admin/fetch/series', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeries']);
+        Route::get('admin/fetch/season/{seriesID}/{season?}/{episode?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeasons']);
+        Route::get('admin/trailer', [App\Http\Controllers\Api\AdminMedia::class, 'getNewTrailer']);
+       
         
         });
 

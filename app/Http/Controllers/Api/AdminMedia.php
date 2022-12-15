@@ -14,9 +14,15 @@ class AdminMedia extends Controller
     {
         $this->user = Util::getUserDetail();
         
+        if($req->has('series_id')){
+            $mainType ="series";
+        }
+        else{
         preg_match_all("/movies|trailers|series/i", $req->type, $dummy);
-        $mainType =($seriesID)?"series":$dummy[0];
+        $mainType =$dummy[0];
         $mainType = (!isset($mainType[0]))?'Videos':$mainType[0];
+        }
+        $client =$this->user;
         /*
         $client = ($this->user->role == 'admin' && $clientId) ?
             Client::find($clientId) :
@@ -42,19 +48,21 @@ class AdminMedia extends Controller
              'subDes'=>$req->subDes,
              'type'=>$mainType,
              ];
-            
+
+         
            $seriesInfo =[];
              
-             if(stripos($req->type,"series")!==false){
+             if(stripos($req->type,"series")!==false || $req->has('series_id')){
                 $rule=array_merge(\Arr::except($rule,['type','category']),['season'=>'required|integer',
                     'episode'=>'required|integer'
-                    ,'series_id'=>"required|integer|exists:series,id,unique:series,id,season,{$req->season},episode,{$req->episode}"
+                    ,'series_id'=>"required|integer|exists:series,id"
                      ]);
 
                  $filter['season']=$req->season;
                  $filter['episode']=$req->episode;
                 }
                 else{
+                    
                      $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
                      $filter =['media_type_id'=>$typeID
                     ,'admin_media_category_id'=>\App\Models\AdminMediaCategory::firstOrCreate([
@@ -82,7 +90,8 @@ class AdminMedia extends Controller
 
             return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $checkValid->errors()],422);
         }
-        else if(!$checkValid->fails() && stripos($req->type,"series")!==false) {
+        else if(!$checkValid->fails() && $req->has('series_id')) {
+          
             $series = \App\Models\Series::find($req->series_id);
 
             $typeID=$series->media_type_id;
@@ -110,13 +119,16 @@ class AdminMedia extends Controller
             $file->storeAs("public/media/",$data['thumbs']);
             $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
         }
+      
         try {
+
             $media = $client->media()->create($data);
             
             $media->filterMedia()->attach([$media->id=> $filter]);
             if($req->has('series_id')){
 
-                $seriesInfo =array_merge($filter,['series_id'=>$req->series_id]);
+                $seriesInfo =array_merge($filter,['series_id'=>$req->series_id ,
+                'season'=>$req->season,'episode'=>$req->episode]);
                 $media->filterSeries()->attach([$media->id=>$seriesInfo]);
             }
             return response()->json(['status' =>true, 'message' => 'Media Added!']);
@@ -143,13 +155,14 @@ class AdminMedia extends Controller
         $wner =',"Admin" as name';
 
         if(!$cate){
-            $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->take(5)
-            ->get();
-            $clientMedia =new \Illuminate\Database\Eloquent\Collection;
-
+            $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->get();
+            //$clientMedia =new \Illuminate\Database\Eloquent\Collection;
+            $mediaData =[];
             foreach($cateLimit as $cate){
                 $cid =$cate->id;
-                $clientMedia = $clientMedia->merge(Media::whereHas('filterMedia',function($media) use($typeID,$cid){
+                //$stdClass=new \stdClass;
+                $name =$cate->category;
+                $stdClass = Media::whereHas('filterMedia',function($media) use($typeID,$cid){
                     $media->where('media_filter.media_type_id',$typeID)
                     ->where('media_filter.admin_media_category_id',$cid);})
                     ->select('admin_media.*','media_types.name as category','admin_media_categories.category as subCategory'
@@ -159,12 +172,16 @@ class AdminMedia extends Controller
                  ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
                  ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date'.$wner)
                  ->withCount('comments','likes')
-                 ->take(4)->get());
+                 ->take(4)->paginate(15);
+                 //$stdClass->category=$name;
+                 if(count($stdClass)>0) $mediaData[]=$stdClass;
+               // $clientMedia = $clientMedia->merge([$stdClass]);
 
 
             }
 
-            return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
+            
+            return response()->json(['status'=>true,'message'=>'Media found','media'=>$mediaData]);
    
 
         }
@@ -293,5 +310,61 @@ class AdminMedia extends Controller
 
           }
 
+
+          public function fetchSeries(Request $req){
+
+            $series =\App\Models\Series::paginate(15);
+
+            return response()->json(['status'=>true,
+            'message'=>"{count($series)} Series In Page",'series'=> $series]);
+          
+          }
+
+          
+          public function fetchSeasons($seriesID,$season=false,$episode=false,$cateID=false,$title=false){
+            //admin_media_id
+            $seasons = Media::whereHas('filterSeries',function($media) use($seriesID,$season,$episode,$cateID,$title){
+               // if($typeID) $media->where('media_filter.media_type_id',$typeID);
+                //if($cateID ) $media->where('media_filter.admin_media_category_id',$cateID);
+                if($season) $media->where('series_media.season',$season);
+                if($seriesID) $media->where('series_media.series_id',$seriesID);
+                if($episode) $media->where('series_media.episode',$episode);
+
+            })->select('admin_media.*','media_types.name as category',
+            'admin_media_categories.category as subCategory'
+             ,'series_media.season','series_media.episode')
+             ->leftjoin('series_media','admin_media.id','series_media.admin_media_id')
+             ->leftjoin('media_types','series_media.media_type_id','media_types.id')
+             ->leftjoin('admin_media_categories','series_media.admin_media_category_id','admin_media_categories.id')
+             ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
+             ->search($title)->withCount('comments','likes')
+             ->paginate(15);
+       
+    
+             return response()->json(['status'=>true,'message'=>$seasons->count().' seasons','seasons'=>$seasons]);
+       
+            
+          }
+
+
+
+           public function getNewTrailer(){
+
+                //$user = Util::getUserDetail();
+          
+               $trailer = Media::select('admin_media.*','media_types.name as category','admin_media_categories.category as subCategory'
+             ,'media_filter.season','media_filter.episode')
+             ->whereHas('filterMedia',function($media){
+                $media->where('media_filter.media_type_id',\App\Models\MediaType::where('name','trailers')->value('id'));})
+             ->leftjoin('media_filter','admin_media.id','media_filter.admin_media_id')
+             ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
+             ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
+             ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
+             ->latest()->first();
+               return response()->json(['status'=>true,'message'=>'Trailer Details','trailer'=>$trailer]);
+        
+                  }
+
+        
 
 }
