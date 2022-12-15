@@ -150,6 +150,7 @@ class ClientController extends Controller
 
         if (auth()->guard('client')->attempt(['email' => $req->email, 'password' => $req->password,'is_active'=>1]) && $token = auth()->guard('client')->user()->createToken('uu4f3b5e03853b', ['client'])->accessToken) {
             $user = auth()->guard('client')->user();
+            $user->update(['visits'=>$user->visits+1]);
             return response()->json(['status' => true, 'message' => 'Login successfully', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'client', 'email' => $user->email]], 200);
         } else {
             return response()->json(['status' => false, 'message' => 'Credentials Errors Or Blocked'], 500);
@@ -353,7 +354,6 @@ $uid = $user->id;
         if(!in_array($status,array_keys($state))){
             return response()->json(['status' => false, 'message' =>'Not Valid Url']);
          }
-    
 
         try{ $client =(intval($id))?Client::find($id):null;
          if($client && $client->update(['is_active'=>ucfirst($state[$status])])){

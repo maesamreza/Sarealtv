@@ -33,6 +33,7 @@ Route::post('email/{type}',[App\Http\Controllers\Api\AdminController::class,'ema
 Route::get('/user/{id}', [adminController::class, 'getMyDetailsById']);
 Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKey']);
 
+Route::get('series/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeriesPage']);
 
 Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
 Route::get('admin/get/media/{MediaId}', [App\Http\Controllers\Api\AdminMedia::class, 'getMediaById']);

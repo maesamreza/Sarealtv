@@ -14,7 +14,7 @@ class Client extends Authenticatable
     //protected $withCount = ['comments','likes'];
     protected $fillable = [
         'name',
-        'email',
+        'email','visits',
         'password', 'picture','is_active'
     ];
 

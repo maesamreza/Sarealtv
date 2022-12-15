@@ -370,6 +370,30 @@ class AdminMedia extends Controller
         
                   }
 
-        
+      
+                  public function fetchSeriesPage($type=false){
+                    
+                    $typeID =  \App\Models\MediaType::where('name',str_replace('_',' ',$type))->first()?->id;
+                    //$client =$user;
+                     
+                    $wner =',"Admin" as name';
+            
+                        $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->get();
+                        //$clientMedia =new \Illuminate\Database\Eloquent\Collection;
+                        $mediaData =[];
+                        foreach($cateLimit as $cate){
+                            $cid =$cate->id;
+                            //$stdClass=new \stdClass;
+                            $name =$cate->category;
+                            $series =\App\Models\Series::where('admin_media_category_id',$cid)->select('series.*')->selectRaw("'$name' as category")->paginate(15);
+                            if(count($series)>0) $mediaData[]=$series;
+                       
+                        }
+            
+                        
+                        return response()->json(['status'=>true,'message'=>'Series List','series'=>$mediaData]);
+               
+                  
+                  }
 
 }
