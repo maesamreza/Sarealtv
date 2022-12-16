@@ -53,7 +53,8 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('media/count/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'getLikes']);
     Route::get('admin/media/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class, 'like']);
     Route::get('admin/media/count/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class,'getLikes']);
-
+    Route::get('admin/trailer', [App\Http\Controllers\Api\AdminMedia::class, 'getNewTrailer']);
+    
 
     Route::post('media/add/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'addComment']);
     Route::delete('media/remove/comments/{id}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'removeComment']);
@@ -98,8 +99,10 @@ Route::middleware('AdminOrClient')->group(function () {
 
 
         
-
-
+    Route::get('get/notifications', [\App\Http\Controllers\Notification::class,'allNoti']);
+    Route::post('remove/notifications/{id}', [\App\Http\Controllers\Notification::class, 'RemoveNoti']);
+    Route::post('clear/notifications', [\App\Http\Controllers\Notification::class, 'allRemoveNoti']);
+ 
 
     Route::post('admin/media/add/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'addComment']);
     Route::delete('admin/media/remove/comments/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
@@ -114,8 +117,7 @@ Route::middleware('AdminOrClient')->group(function () {
         Route::post('admin/add/series', [App\Http\Controllers\Api\AdminMedia::class, 'addSeries']);
         Route::get('admin/fetch/series', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeries']);
         Route::get('admin/fetch/season/{seriesID}/{season?}/{episode?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeasons']);
-        Route::get('admin/trailer', [App\Http\Controllers\Api\AdminMedia::class, 'getNewTrailer']);
-       
+        Route::post('admin/add/season', [App\Http\Controllers\Api\AdminMedia::class, 'addSeriesSeason']);
         
         });
 

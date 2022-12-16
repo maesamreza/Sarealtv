@@ -9,4 +9,9 @@ class Series extends Model
 {
     protected $fillable =['title','subDes','des','media_type_id','admin_media_category_id'];
     use HasFactory;
+
+    public function Seasons(){
+
+        return $this->hasMany(\App\Models\SeriesSeason::class)->withCount('Eposode');
+    } 
 }

@@ -27,6 +27,12 @@ class Client extends Authenticatable
     ];
     use HasApiTokens, HasFactory;
 
+
+public function Notifications(){
+
+    return $this->hasMany(\App\Models\Notification::class);
+}
+
     public function clientProfile()
     {
 

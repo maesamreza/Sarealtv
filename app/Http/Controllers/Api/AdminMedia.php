@@ -54,7 +54,8 @@ class AdminMedia extends Controller
              
              if(stripos($req->type,"series")!==false || $req->has('series_id')){
                 $rule=array_merge(\Arr::except($rule,['type','category']),['season'=>'required|integer',
-                    'episode'=>'required|integer'
+                    'episode'=>'required|integer',
+                    'season'=>'required|integer|exists:series_seasons,id,series_id,'.$req->series_id
                     ,'series_id'=>["required","integer","exists:series,id",
                    
                     \Illuminate\Validation\Rule::unique('series_media','series_id')
@@ -66,6 +67,7 @@ class AdminMedia extends Controller
                  $filter['episode']=$req->episode;
                 }
                 else{
+                    try{
                     
                      $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
                      $filter =['media_type_id'=>$typeID
@@ -73,6 +75,11 @@ class AdminMedia extends Controller
                     'category'=>$req->category,
                     'media_type_id'=>$typeID
                     ])->id];
+                    }
+                     catch (\illuminate\Database\QueryException $e) {
+                     return response()->json(['status'=>false,'message'=>'Category Or Type are Missing']);
+
+                    }
                 }
             
         if (
@@ -159,7 +166,7 @@ class AdminMedia extends Controller
          
         $wner =',"Admin" as name';
 
-        if(!$cate){
+        if(!$cate || $cate !="all_categories"){
             $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->get();
             //$clientMedia =new \Illuminate\Database\Eloquent\Collection;
             $mediaData =[];
@@ -191,10 +198,10 @@ class AdminMedia extends Controller
 
         }
         else{
-        $cateID = ($cate)?\App\Models\AdminMediaCategory::where('media_type_id',$typeID)
+        $cateID = ($cate && $cate !="all_categories")?\App\Models\AdminMediaCategory::where('media_type_id',$typeID)
         ->where('category',str_replace('_',' ',$cate))->first()?->id:null;
 
-        if(!$typeID || ($cate && !$cateID)){
+        if((!$typeID || ($cate && !$cateID)) && $cate !="all_categories"){
 
             return response()->json(['status'=>false,'message'=>"Not Valid URI"]);
          
@@ -316,6 +323,45 @@ class AdminMedia extends Controller
           }
 
 
+          public function addSeriesSeason(Request $req){
+
+            $rules =['title'=>'required|string|unique:series_seasons,title',
+            'des'=>'required|string',
+            'subDes'=>'required|string',
+            'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
+            'series_id'=>'required|integer|exists:series,id',
+            'season'=>'required|string'];
+            $validInput = Validator::make($req->all(),$rules);
+            if($validInput->fails()){
+
+                return response()->json(['status'=>false,
+                'message'=>'Some fields is Not Valid','errors'=>$validInput->errors()],422);
+            }
+            
+            $data =array_intersect_key($req->all(),['title'=>'','des'=>'','subDes'=>'','series_id'=>'','season'=>'']);
+            if ($req->hasFile('thumbs')) {
+
+                $file = $req->file('thumbs');
+                $type = $file->extension();
+                $fid="f1";
+                $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+                $file->storeAs("public/media/",$data['thumbs']);
+                $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
+            }
+
+            try{
+                \App\Models\SeriesSeason::create($data);
+                return response()->json(['status'=>true,
+                'message'=>'Season Added']);
+            }
+            catch(\Throwable $th){ 
+                return response()->json(['status'=>false,
+                'message'=>'Fails to add Season'],500);
+             }
+
+          }
+
+
           public function fetchSeries(Request $req){
 
             $series =\App\Models\Series::paginate(15);
@@ -328,10 +374,19 @@ class AdminMedia extends Controller
           
           public function fetchSeasons($seriesID,$season=false,$episode=false,$cateID=false,$title=false){
             //admin_media_id
+            
+            
+            if(!$season){
+           
+                $seasons = \App\Models\Series::where('id',$seriesID)->with('Seasons')->get();
+           
+            }
+            else{
+            
             $seasons = Media::whereHas('filterSeries',function($media) use($seriesID,$season,$episode,$cateID,$title){
                // if($typeID) $media->where('media_filter.media_type_id',$typeID);
                 //if($cateID ) $media->where('media_filter.admin_media_category_id',$cateID);
-                if($season) $media->where('series_media.season',$season);
+                ($season)?$media->where('series_media.season',$season):$media->where('series_media.episode',1);
                 if($seriesID) $media->where('series_media.series_id',$seriesID);
                 if($episode) $media->where('series_media.episode',$episode);
 
@@ -344,7 +399,7 @@ class AdminMedia extends Controller
              ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
              ->search($title)->withCount('comments','likes')
              ->paginate(15);
-       
+        }
     
              return response()->json(['status'=>true,'message'=>$seasons->count().' seasons','seasons'=>$seasons]);
        
@@ -385,7 +440,8 @@ class AdminMedia extends Controller
                             $cid =$cate->id;
                             //$stdClass=new \stdClass;
                             $name =$cate->category;
-                            $series =\App\Models\Series::where('admin_media_category_id',$cid)->select('series.*')->selectRaw("'$name' as category")->paginate(15);
+                            $series =\App\Models\Series::where('admin_media_category_id',$cid)->select('series.*')
+                            ->selectRaw("'$name' as category")->paginate(15);
                             if(count($series)>0) $mediaData[]=$series;
                        
                         }

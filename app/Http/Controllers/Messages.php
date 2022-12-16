@@ -29,6 +29,7 @@ class Messages extends Controller
 
         try{
             $message =new \App\Models\Message;
+
             $message->message=$req->message;
            $message->save();
             $user->Messages()->attach($message->id,[
@@ -37,14 +38,23 @@ class Messages extends Controller
             $message->sender_id=$user->id;
             $message->reciever_id=$req->reciever_id;
 
-                $pid =($user->id<$req->reciever_id)?$user->id."_".$req->reciever_id:$req->reciever_id."_".$user->id;
-            // broadcast(new \App\Events\IsMessage($user, $message))->toOthers();
+            $pid =($user->id<$req->reciever_id)?$user->id."_".$req->reciever_id:$req->reciever_id."_".$user->id;
+           
+           
+                // broadcast(new \App\Events\IsMessage($user, $message))->toOthers();
+
+                \App\Http\Controllers\Notification::createNoti([
+                    'title'=>'You Have A new Message',
+                    'message'=>"Message From {$user->name}",
+                    'client_id'=>$req->reciever_id
+                ]);
 
             $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
              env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
               array('cluster' => 'ap2'));
             $pusher->trigger("IS_MESSAGE_$pid", 'is.message', 
             array('message' => $message));
+
            
           return response()->json([
             'status' => true,
