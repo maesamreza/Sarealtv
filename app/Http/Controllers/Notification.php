@@ -11,6 +11,7 @@ class Notification extends Controller
 
 static function createNoti($reqData){
 
+ 
 /*$rules =['title'=>'required|string','message'=>'request|string'];
 
  $checkData=Validator::make($reqData,$rules);
@@ -23,10 +24,21 @@ static function createNoti($reqData){
 
  try{
 
-    \App\Models\Notification::create($reqData);
+   $socketID =$reqData['socketID'];
+   $name =$reqData['name'];
+   $data = array_intersect_key($reqData,['title'=>'',
+   'message'=>'',
+   'client_id'=>'',
+  ]);
+    \App\Models\Notification::create($data);
+    $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
+    env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
+    array('cluster' => 'ap2'));
+    $pusher->trigger("IS_MESSAGE_$socketID", 'is.message', 
+    array('message' =>$data));
     return response()->json(['status'=>true,'message'=>'Notification Sent!']);
   
- }
+      }
  catch(\Illuminate\Database\QueryException $e){
 
     return response()->json(['status'=>false,'message'=>'Fails to send Notification']);

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Tools\Util;
 use Validator;
 use Illuminate\Validation\Rule;
-
+use App\Models\Api\Client;
 class Messages extends Controller
 {
 
@@ -43,18 +43,21 @@ class Messages extends Controller
            
                 // broadcast(new \App\Events\IsMessage($user, $message))->toOthers();
 
-                \App\Http\Controllers\Notification::createNoti([
+                $notificatin =[
                     'title'=>'You Have A new Message',
                     'message'=>"Message From {$user->name}",
-                    'client_id'=>$req->reciever_id
-                ]);
+                    'client_id'=>$req->reciever_id,
+                    'socketID'=>Client::where('id',$req->reciever_id)->value('socket_id'),
+                    'name'=>$user->name
+                ];
+                \App\Http\Controllers\Notification::createNoti($notificatin);
 
-            $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
-             env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
+              $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
+              env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
               array('cluster' => 'ap2'));
-            $pusher->trigger("IS_MESSAGE_$pid", 'is.message', 
-            array('message' => $message));
-
+              $pusher->trigger("IS_MESSAGE_$pid", 'is.message', 
+              array('message' => $message));
+             
            
           return response()->json([
             'status' => true,

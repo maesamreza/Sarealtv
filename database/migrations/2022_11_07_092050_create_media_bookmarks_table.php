@@ -17,12 +17,14 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id');
             //$table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->unsignedBigInteger('owner_id');
-            $table->foreign('owner_id')->references('id')->on('clients')->onDelete('cascade');
-            $table->unsignedBigInteger('client_media_id');
-            $table->foreign('client_media_id')->references('id')->on('client_media')->onDelete('cascade');
+            //$table->foreign('owner_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->unsignedBigInteger('client_media_id')->nullable();
+            $table->unsignedBigInteger('admin_media_id')->nullable();
+
+            //$table->foreign('client_media_id')->references('id')->on('client_media')->onDelete('cascade');
             $table->unsignedBigInteger('bookmark_list_id');
             $table->foreign('bookmark_list_id')->references('id')->on('bookmark_lists')->onDelete('cascade');
-            $table->unique(['client_media_id','bookmark_list_id']);
+            $table->unique(['client_media_id','bookmark_list_id','owner_id']);
             $table->timestamps();
         });
     }

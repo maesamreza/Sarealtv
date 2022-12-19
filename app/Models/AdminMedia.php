@@ -12,6 +12,13 @@ class AdminMedia extends Model
 {
 
 
+    protected static function booted()
+    {
+        static::addGlobalScope('owner', function ($builder) {
+            $builder->where('user_id','<', '111');
+        });
+    }
+
     protected $withCount = ['comments','likes'];
     public $visitor=0;
 
@@ -55,8 +62,13 @@ class AdminMedia extends Model
     }   
     
     public function relatedMedia($series=false){
-
-       // return self::query();
+       
+        
+       extract(array_intersect_key($this->filterMedia()->select('media_filter.*')->first()->toArray()));
+       $match =["media_filter.media_type_id"=> $media_type_id,
+       "media_filter.admin_media_category_id"=> $admin_media_category_id];
+      // return dd($match);
+   
 
 
     }

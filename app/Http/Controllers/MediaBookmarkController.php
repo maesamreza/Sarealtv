@@ -20,6 +20,7 @@ class MediaBookmarkController extends Controller
             'checkList' => ["required",'integer',Rule::unique('bookmark_lists','client_id')
             ->where('title',$req->title)]
         ];
+
         $checkInputs = Validator::make(array_merge($req->all(),['checkList' => $user->id]), $rules, [
             'checkList.exists' => 'This Title Allready In List'
         ]);
@@ -85,7 +86,7 @@ class MediaBookmarkController extends Controller
         }
     }
 
-    public function AddToList($mediaId,$listId)
+    public function AddToList($mediaId,$listId,$adminMedia=false)
     {
 
         $user = Util::getUserDetail();
@@ -94,8 +95,14 @@ class MediaBookmarkController extends Controller
             'listId' => "required|integer|exists:bookmark_lists,id,client_id,$user->id",
             'id' => 'required|integer|exists:client_media,id',
             'checkList' => ["required",'integer',Rule::unique('media_bookmarks','client_media_id')
-            ->where('client_id',$user->id)->where('bookmark_list_id',$listId)]
+            ->where('bookmark_list_id',$listId)->where('client_id',$user->id)
+            ->where('owner_id',($adminMedia)?\App\Models\AdminMedia::find($mediaId)->value('user_id'): 
+            \App\Models\ClientMedia::find($mediaId)->value('client_id'))]
         ];
+
+       
+           if($adminMedia) $rules['id'] = 'required|integer|exists:admin_media,id';
+           
         $checkInputs = Validator::make(['id' => $mediaId,
         'checkList' =>$mediaId,
         'listId'=>$listId], $rules, [
@@ -105,9 +112,13 @@ class MediaBookmarkController extends Controller
             'status' => false,
             'message' => 'Inputs Not Valid!', 'errors' => $checkInputs->errors()
         ], 422);
+
+
+      
         try {
 
-            $media = \App\Models\ClientMedia::select('id', 'client_id')->find($mediaId);
+            $media = ($adminMedia)?\App\Models\AdminMedia::select('id', 'user_id as client_id')->find($mediaId): \App\Models\ClientMedia::select('id', 'client_id')->find($mediaId);
+           $data =
             $media->MediaList()->create(['owner_id' => $media->client_id,
              'client_id' => $user->id,
             'bookmark_list_id'=>$listId]);
@@ -116,6 +127,13 @@ class MediaBookmarkController extends Controller
                 'message' => 'Added to List'
             ]);
         } catch (\illuminate\Database\QueryException $e) {
+
+            $errorCode = $e->errorInfo[1];
+
+            if ($errorCode == 1062)
+                return response()->json(['status' =>false, 'message' =>'This Media Allready In List']);
+
+
             return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
         }
     }
@@ -190,7 +208,10 @@ class MediaBookmarkController extends Controller
     {
         $user = Util::getUserDetail();
 
-        $clientId=($user->role =="admin")?intval($clientId):$user->id;
+        $clientId=($user->role =="admin" || $clientId)?intval($clientId):$user->id;
+        if($user->id !==  $clientId){
+            $user =\App\Models\Api\Client::find($clientId);
+        }
         $channel =intval(request()->channel);
         if(!$clientId)  return response()->json([
             'status' => false,
@@ -209,9 +230,13 @@ class MediaBookmarkController extends Controller
 
         try {
             $mediaList = $user->MediaList($listId,$channel)->select('id', 'url', 'des','title')->get();
+           
+            $AdminMediaList = $user->AdminMediaList($listId,$channel)->select('id', 'url', 'des','title')->get();
+            //return ['client'=>$mediaList,'admin'=>$AdminMediaList];
+           // $mediaList = $mediaList->merge($AdminMediaList);
             return response()->json([
                 'status' => true,
-                'message' => 'Media List', 'media_list' => $mediaList,
+                'message' => 'Media List', 'media_list' =>['client'=>$mediaList,'admin'=>$AdminMediaList],
                 'list_details'=>\App\Models\BookmarkList::select('id','title','des')->find($listId)
             ]);
         } catch (\illuminate\Database\QueryException $e) {

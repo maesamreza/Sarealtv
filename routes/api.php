@@ -80,7 +80,7 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::post('list/add', [App\Http\Controllers\MediaBookmarkController::class, 'CreateList']);
     Route::post('list/remove/{listId}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveList']);
    
-    Route::post('media/list/add/{mediaId}/{listId}', [App\Http\Controllers\MediaBookmarkController::class, 'AddToList']);
+    Route::post('media/list/add/{mediaId}/{listId}/{adminMedia?}', [App\Http\Controllers\MediaBookmarkController::class, 'AddToList']);
     Route::post('media/list/remove/{mediaId}/{listId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveFromList']);
     Route::get('media/list/fetch/{listId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'getList']);
     Route::get('{type}/list/fetch/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'fetchListNames']);
@@ -108,6 +108,7 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::delete('admin/media/remove/comments/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
     Route::post('admin/media/add/comment/replay/{commentId}', [\App\Http\Controllers\Api\MediaComments::class, 'addCommentReplay']);
     Route::delete('admin/media/remove/comment/replay/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
+    Route::get('admin/fetch/season/{seriesID}/{season?}/{episode?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeasons']);
     
     Route::middleware('Admin')->group(function () {
         Route::get('list/client', [ClientController::class, 'ClientList']);
@@ -116,9 +117,7 @@ Route::middleware('AdminOrClient')->group(function () {
         Route::post('admin/add/media/{seriesID?}', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
         Route::post('admin/add/series', [App\Http\Controllers\Api\AdminMedia::class, 'addSeries']);
         Route::get('admin/fetch/series', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeries']);
-        Route::get('admin/fetch/season/{seriesID}/{season?}/{episode?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeasons']);
         Route::post('admin/add/season', [App\Http\Controllers\Api\AdminMedia::class, 'addSeriesSeason']);
-        
         });
 
 });

@@ -144,9 +144,19 @@ public function Notifications(){
         if ($id) return $this->belongsToMany(\App\Models\ClientMedia::class,'media_bookmarks', 'owner_id')
         ->where('bookmark_list_id',$listId)->withTimestamps();
 
-        return $this->belongsToMany(\App\Models\ClientMedia::class,'media_bookmarks')
+        return $this->belongsToMany(\App\Models\ClientMedia::class,'media_bookmarks','client_id','client_media_id')
         ->where('bookmark_list_id',$listId)->withTimestamps();
     }
+    
+    public function AdminMediaList($listId,$id = false)
+    {
+        // if ($id) return $this->belongsToMany(\App\Models\AdminMedia::class,'media_bookmarks', 'owner_id')
+        // ->where('bookmark_list_id',$listId)->where('media_bookmarks.owner_id','<','111')->withTimestamps();
+
+        return $this->belongsToMany(\App\Models\AdminMedia::class,'media_bookmarks','client_id','admin_media_id')
+        ->where('bookmark_list_id',$listId)->withTimestamps();
+    }
+
 
 
 

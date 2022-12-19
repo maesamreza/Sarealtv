@@ -36,6 +36,13 @@ class ClientMedia extends Model
             $this->visitor=Util::getUserDetail()->id??0;
           }
 
+          protected static function booted()
+          {
+              static::addGlobalScope('owner', function ($builder) {
+                  $builder->where('client_id','>', '111');
+              });
+          }
+
     public function likes(){
         return $this->hasMany(MediaLike::class);
     }

@@ -81,6 +81,7 @@ class ClientController extends Controller
         }
 
         if ($user->save() && $user->clientProfile()->create($profile)) {
+
 /*
             if (auth()->guard('client')->attempt(['email' => $req->email, 'password' => $req->password]) && $token = auth()->guard('client')->user()->createToken('uu4f3b5e03853b', ['client'])->accessToken) {
                 $user = auth()->guard('client')->user();
@@ -90,7 +91,8 @@ class ClientController extends Controller
             }*/
 
             try{
-
+                $user->socket_id =\App\Http\Controllers\Notification::encrypting(str_replace(' ','',$user->name).$user->id);
+                $user->save();
                 if(\App\Http\Controllers\Api\AdminController::verifyEmail($req->email)){
 
                 return response()->json(['status' => false, 'message' => 'Check Inbox to Verify Your Email'], 200);
@@ -151,7 +153,8 @@ class ClientController extends Controller
         if (auth()->guard('client')->attempt(['email' => $req->email, 'password' => $req->password,'is_active'=>1]) && $token = auth()->guard('client')->user()->createToken('uu4f3b5e03853b', ['client'])->accessToken) {
             $user = auth()->guard('client')->user();
             $user->update(['visits'=>$user->visits+1]);
-            return response()->json(['status' => true, 'message' => 'Login successfully', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'client', 'email' => $user->email]], 200);
+            return response()->json(['status' => true, 'message' => 'Login successfully', 'accessToken' => $token, 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => 'client', 'email' => $user->email,"visits"=>$user->visits,
+            "socket_id"=>$user->socket_id]], 200);
         } else {
             return response()->json(['status' => false, 'message' => 'Credentials Errors Or Blocked'], 500);
         }
