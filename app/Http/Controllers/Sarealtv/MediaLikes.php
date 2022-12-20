@@ -30,6 +30,16 @@ public function like(Request $req,$mediaId){
        else if($media->likes()->create(['client_id'=>$user->id,
        'owner_id'=>$media->client_id])){
 
+       $notificatin =[
+            'title'=>'Like On Post',
+            'message'=>"{$user->name} Like Your Post",
+            'client_id'=>$user->id,
+            'socketID'=>\App\Models\Api\Client::where('id',$media->client_id)->value('socket_id'),
+            'name'=>$user->name
+        ];
+        \App\Http\Controllers\Notification::createNoti($notificatin);
+        
+
         return response()->json(['status'=>true,
         'message'=>'Like Added!','refresh'=>$media->likes()->count()]);
        }

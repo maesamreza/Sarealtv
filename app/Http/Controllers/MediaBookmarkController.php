@@ -229,9 +229,9 @@ class MediaBookmarkController extends Controller
 
 
         try {
-            $mediaList = $user->MediaList($listId,$channel)->select('id', 'url', 'des','title')->get();
+            $mediaList = $user->MediaList($listId,$channel)->select('id', 'thumbs', 'des','title')->get();
            
-            $AdminMediaList = $user->AdminMediaList($listId,$channel)->select('id', 'url', 'des','title')->get();
+            $AdminMediaList = $user->AdminMediaList($listId,$channel)->select('id', 'thumbs', 'des','title')->get();
             //return ['client'=>$mediaList,'admin'=>$AdminMediaList];
            // $mediaList = $mediaList->merge($AdminMediaList);
             return response()->json([

@@ -26,6 +26,16 @@ class MediaComments extends Controller
         $media = Media::find($mediaId);
        $media->comments()->create(['client_id'=>$user->id,
            'comments'=>$req->comments]);
+
+           $notificatin =[
+            'title'=>'Comments On Post',
+            'message'=>"{$user->name} Comments On Your Post",
+            'client_id'=>$user->id,
+            'socketID'=>\App\Models\Api\Client::where('id',$media->client_id)->value('socket_id'),
+            'name'=>$user->name
+        ];
+        \App\Http\Controllers\Notification::createNoti($notificatin);
+        
     
             return response()->json(['status'=>true,
             'message'=>'Media Comments Recorded!','refresh'=>$media->comments()->get()]);

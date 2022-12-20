@@ -81,7 +81,7 @@ public function allRemoveNoti(){
             if(!$user->Notifications()->where('id',$id)->delete()){
                 return response()->json(['status'=>false,'message'=>'Fails to Remove Notification']);
            
-            }
+               }
             return response()->json(['status'=>true,'message'=>'Notification Removed!']);
           
          }

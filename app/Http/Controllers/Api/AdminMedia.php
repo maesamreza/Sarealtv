@@ -166,7 +166,7 @@ class AdminMedia extends Controller
          
         $wner =',"Admin" as name';
 
-        if(!$cate || $cate !="all_categories"){
+        if(!$cate){
             $cateLimit =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->get();
             //$clientMedia =new \Illuminate\Database\Eloquent\Collection;
             $mediaData =[];
@@ -351,7 +351,7 @@ class AdminMedia extends Controller
             'subDes'=>'required|string',
             'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
             'series_id'=>'required|integer|exists:series,id',
-            'season'=>'required|string'];
+            'season'=>'required|integer'];
             $validInput = Validator::make($req->all(),$rules);
             if($validInput->fails()){
 
@@ -375,7 +375,11 @@ class AdminMedia extends Controller
                 return response()->json(['status'=>true,
                 'message'=>'Season Added']);
             }
-            catch(\Throwable $th){ 
+            catch(\Throwable $e){ 
+                $errorCode = $e->errorInfo[1];
+                if ($errorCode == 1062)
+                return response()->json(['status' =>false, 'message' =>"Season {$req->season} Allready Exists"]);
+
                 return response()->json(['status'=>false,
                 'message'=>'Fails to add Season'],500);
              }
@@ -407,6 +411,7 @@ class AdminMedia extends Controller
             $seasons = Media::whereHas('filterSeries',function($media) use($seriesID,$season,$episode,$cateID,$title){
                // if($typeID) $media->where('media_filter.media_type_id',$typeID);
                 //if($cateID ) $media->where('media_filter.admin_media_category_id',$cateID);
+                if($season) $season =\App\Models\SeriesSeason::where('season',$season)->where('series_id',$seriesID)->value('id');
                 ($season)?$media->where('series_media.season',$season):$media->where('series_media.episode',1);
                 if($seriesID) $media->where('series_media.series_id',$seriesID);
                 if($episode) $media->where('series_media.episode',$episode);

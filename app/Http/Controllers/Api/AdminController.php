@@ -238,7 +238,7 @@ class AdminController extends Controller
         Mail::send('email.forgetPassword', ['token' => $token], function ($message) use ($email) {
             $message->to($email);
             //$message->to('iirfanumer@gmail.com');
-            $message->subject('Email Verification');
+            $message->subject('Sarealtv Email Verification');
         });
     
     return true;}

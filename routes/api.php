@@ -27,6 +27,7 @@ Route::get('fetch/all/media/{clientId?}', [App\Http\Controllers\Sarealtv\ClientM
 Route::get('fetch/{ownerId}/media/like/by/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaLiked']);
 Route::get('fetch/{ownerId}/media/like/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaILike']);
 Route::get('get/media/info/{mediaId}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getMediaById']);
+Route::get('admin/trailer', [App\Http\Controllers\Api\AdminMedia::class, 'getNewTrailer']);
 
 Route::post('email/{type}',[App\Http\Controllers\Api\AdminController::class,'emailVerify']);
 
@@ -53,7 +54,6 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('media/count/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'getLikes']);
     Route::get('admin/media/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class, 'like']);
     Route::get('admin/media/count/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class,'getLikes']);
-    Route::get('admin/trailer', [App\Http\Controllers\Api\AdminMedia::class, 'getNewTrailer']);
     
 
     Route::post('media/add/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'addComment']);
