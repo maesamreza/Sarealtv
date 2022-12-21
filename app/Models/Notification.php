@@ -11,7 +11,7 @@ class Notification extends Model
     protected $fillable =[
         'title',
         'message',
-        'client_id'
+        'client_id','admin_media_id','media_id','sender_id','media_category',
            ];
    // use HasFactory;
 }

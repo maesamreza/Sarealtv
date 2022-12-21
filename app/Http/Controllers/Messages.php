@@ -47,6 +47,9 @@ class Messages extends Controller
                     'title'=>'You Have A new Message',
                     'message'=>"Message From {$user->name}",
                     'client_id'=>$req->reciever_id,
+                    'sender_id'=>$user->id,
+                    'media_id'=>'',
+                    'admin_media_id'=>'',
                     'socketID'=>Client::where('id',$req->reciever_id)->value('socket_id'),
                     'name'=>$user->name
                 ];

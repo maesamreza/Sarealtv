@@ -23,14 +23,19 @@ class MediaComments extends Controller
       
       try{              
         
-        $media = Media::find($mediaId);
+        $media = Media::find($mediaId)
+        ->join();
        $media->comments()->create(['client_id'=>$user->id,
            'comments'=>$req->comments]);
 
            $notificatin =[
             'title'=>'Comments On Post',
             'message'=>"{$user->name} Comments On Your Post",
-            'client_id'=>$user->id,
+            'client_id'=>$media->client_id,
+            'sender_id'=>$user->id,
+            'media_id'=>$mediaId,
+            'admin_media_id'=>'',
+            'media_category'=>$media->type,
             'socketID'=>\App\Models\Api\Client::where('id',$media->client_id)->value('socket_id'),
             'name'=>$user->name
         ];

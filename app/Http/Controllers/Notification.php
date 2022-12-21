@@ -26,12 +26,16 @@ static function createNoti($reqData){
 
    $socketID =$reqData['socketID'];
    $name =$reqData['name'];
-   $data = array_intersect_key($reqData,['title'=>'',
+   $data = array_filter(array_intersect_key($reqData,['title'=>'',
    'message'=>'',
-   'client_id'=>'',
-  ]);
-    \App\Models\Notification::create($data);
-    $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
+   'client_id'=>'','admin_media_id'=>'','media_id'=>'','sender_id'=>'','media_category'=>'',
+  ]));
+
+   try{\App\Models\Notification::create($data);}
+catch(\Throwable $th){
+return false;
+}
+   $pusher = new \Pusher\Pusher(env("PUSHER_APP_KEY"),
     env("PUSHER_APP_SECRET"),env("PUSHER_APP_ID"),
     array('cluster' => 'ap2'));
     $pusher->trigger("IS_MESSAGE_$socketID", 'is.message', 

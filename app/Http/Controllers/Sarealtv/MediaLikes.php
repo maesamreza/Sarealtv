@@ -33,7 +33,11 @@ public function like(Request $req,$mediaId){
        $notificatin =[
             'title'=>'Like On Post',
             'message'=>"{$user->name} Like Your Post",
-            'client_id'=>$user->id,
+            'client_id'=>$media->client_id,
+            'media_id'=>$mediaId,
+            'sender_id'=>$user->id,
+            'media_category'=>$media->type,
+            'admin_media_id'=>'',
             'socketID'=>\App\Models\Api\Client::where('id',$media->client_id)->value('socket_id'),
             'name'=>$user->name
         ];

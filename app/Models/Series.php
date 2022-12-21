@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Series extends Model
 {
-    protected $fillable =['title','subDes','des','media_type_id','admin_media_category_id'];
+    protected $fillable =['title','subDes','des','media_type_id','admin_media_category_id','thumbs'];
     use HasFactory;
 
     public function Seasons(){
