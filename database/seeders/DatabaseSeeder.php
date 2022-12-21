@@ -14,6 +14,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+
+    //    return dd(\App\Models\MessageBridge::where('sender_id',137)->orWhere('reciever_id',137)->selectRaw("CASE WHEN reciever_id = 137 THEN sender_id
+    // ELSE reciever_id
+    // END AS client_id")->pluck('client_id')->toArray());
+
             \App\Models\User::create([
                 'name' => 'Test User',
                 'email' => 'sarealtv@mail.com',

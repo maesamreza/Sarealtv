@@ -179,7 +179,20 @@ public function Notifications(){
             ->withTimestamps();
     }
     public function inboxList(){
-        return self::whereNot('clients.id',$this->id)->select('name','clients.id')
+
+return self::select('clients.id','clients.name')->whereIn('clients.id',\App\Models\MessageBridge::where('sender_id',$this->id)->orWhere('reciever_id',$this->id)->selectRaw("CASE WHEN reciever_id = $this->id THEN sender_id
+ELSE reciever_id
+END AS client_id")->pluck('client_id')->toArray())
+->with('clientProfile:id,client_id,picture')->distinct();;
+
+        /*return "updated";
+  return \App\Models\MessageBridge::where('sender_id',$this->id)->orWhere('reciever_id',$this->id)->selectRaw("CASE WHEN reciever_id = $this->id THEN sender_id
+    ELSE reciever_id
+    END AS client_id")->get();*/
+   
+
+
+        return self::where('clients.id',$this->id)->select('name','clients.id')
         ->join('message_bridges',function($inbox){
             $inbox->on('clients.id','message_bridges.sender_id')
             ->orOn('clients.id','message_bridges.reciever_id');})->distinct();
