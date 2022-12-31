@@ -23,8 +23,7 @@ class MediaComments extends Controller
       
       try{              
         
-        $media = Media::find($mediaId)
-        ->join();
+        $media = Media::find($mediaId);
        $media->comments()->create(['client_id'=>$user->id,
            'comments'=>$req->comments]);
 

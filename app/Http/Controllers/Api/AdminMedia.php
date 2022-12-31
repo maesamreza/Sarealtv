@@ -10,7 +10,7 @@ use Validator;
 class AdminMedia extends Controller
 {
 
-    public function addMedia(Request $req, $seriesID = false)
+    public function addMedia(Request $req, $mediaID = false)
     {
         $this->user = Util::getUserDetail();
         
@@ -94,8 +94,7 @@ class AdminMedia extends Controller
             $rule['media'] = $rule['media'].$maxSize;
         }
 
-
-        $checkValid = Validator::make($req->all(), $rule, [
+        $checkValid = Validator::make(array_merge($req->all(),['mediaID'=>$mediaID] ), $rule, [
             'series_id.unique' => 'This Episode Allready Exists']);
 
         if ($checkValid->fails()) {
@@ -154,6 +153,176 @@ class AdminMedia extends Controller
                 return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
             }
     }
+
+
+   public function updateMedia(Request $req, $mediaID = false)
+    {
+        $this->user = Util::getUserDetail();
+        
+        if($req->has('series_id')){
+            $mainType ="series";
+        }
+        else{
+        preg_match_all("/movies|trailers|series/i", $req->type, $dummy);
+        $mainType =$dummy[0];
+        $mainType = (!isset($mainType[0]))?'Videos':$mainType[0];
+        }
+        $client =$this->user;
+        
+        $maxSize =($req->type == 'trailers')?"|max:21024":"";
+        $maxDur =($req->type == 'trailers')?"|max:30":"";
+        $rule = [
+            'mediaId'=>"required|integer|exists:admin_media,id",
+            'title' => 'nullable|string',
+            'des' => 'nullable|string',
+            'media' => 'nullable|mimes:jpeg,jpg,gif,png',
+            'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
+             //'type'=>'required|string',
+             //'category'=>'required|string',
+        ];
+        $data = [
+             'title' => $req->title,
+             'des' => $req->des,
+             //'subDes'=>$req->subDes,
+             //'type'=>$mainType,
+             ];
+
+         
+           $seriesInfo =[];
+             
+             if(stripos($req->type,"series")!==false || $req->has('series_id')){
+                $rule=array_merge(\Arr::except($rule,['type','category']),['season'=>'nullable|integer',
+                    'episode'=>'nullable|integer',
+                    'season'=>'nullable|integer|exists:series_seasons,id,series_id,'.$req->series_id
+                    ,'series_id'=>["nullable","integer","exists:series,id",
+                   
+                    \Illuminate\Validation\Rule::unique('series_media','series_id')
+                   ->where('season',$req->season)->where('episode',$req->episode)
+                   ]
+                     ]);
+
+                 $filter['season']=$req->season;
+                 $filter['episode']=$req->episode;
+                }
+                else{
+                    try{
+                    
+                     $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
+                     $filter =['media_type_id'=>$typeID
+                    ,'admin_media_category_id'=>\App\Models\AdminMediaCategory::firstOrCreate([
+                    'category'=>$req->category,
+                    'media_type_id'=>$typeID
+                    ])->id];
+                    }
+                     catch (\illuminate\Database\QueryException $e) {
+                     return response()->json(['status'=>false,'message'=>'Category Or Type are Missing']);
+
+                    }
+                }
+            
+        if (
+            $req->hasFile('media') &&
+            in_array($req->file('media')->extension(), ['mp4', '3gp', 'mov', 'avi', 'webm'])
+        ) {
+            $rule['media'] = $rule['media'] . ",webm,mp4,3gp,mov,avi $maxSize";
+            $rule['duration'] = "required|integer $maxDur";
+            
+            $data['duration'] = $req->duration;
+        } else {
+            $rule['media'] = $rule['media'].$maxSize;
+        }
+
+        $checkValid = Validator::make(array_merge($req->all(),['mediaId'=>$mediaID] ), $rule, [
+            'series_id.unique' => 'This Episode Allready Exists']);
+
+        if ($checkValid->fails()) {
+
+            return response()->json(['status' => false, 'message' => 'Invalid Data', 'errors' => $checkValid->errors()],422);
+        }
+        else if(!$checkValid->fails() && $req->has('series_id')) {
+          
+            $series = \App\Models\Series::find($req->series_id);
+
+            $typeID=$series->media_type_id;
+
+           $filter =['media_type_id'=>$typeID
+           ,'admin_media_category_id'=>$series->admin_media_category_id];
+          }
+
+        if ($req->hasFile('media')) {
+
+            $file = $req->file('media');
+            $type = $file->extension();
+            $fid="f".$this->user->id;
+            $data['url'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+            $file->storeAs("public/media/",$data['url']);
+            $data['url']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['url'];
+        }
+
+        if ($req->hasFile('thumbs')) {
+
+            $file = $req->file('thumbs');
+            $type = $file->extension();
+            $fid="f".$this->user->id;
+            $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+            $file->storeAs("public/media/",$data['thumbs']);
+            $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
+        }
+      
+        try {
+
+            $media = Media::find($mediaID);
+            $media->update(array_filter($data));
+            
+            $media->filterMedia()->update($filter);
+           
+            if($req->has('series_id')){
+
+                $seriesInfo =array_merge($filter,['series_id'=>$req->series_id ,
+                'season'=>$req->season,'episode'=>$req->episode]);
+                $media->filterSeries()->update(array_filter($seriesInfo));
+            }
+            return response()->json(['status' =>true, 'message' => 'Media Updated!']);
+        } catch (\illuminate\Database\QueryException $e) {
+
+            $errorCode = $e->errorInfo[1];
+
+            if ($errorCode == 1062)
+                return response()->json(['status' =>false, 'message' =>'This Episode Allready Exists']);
+
+                return response()->json(['status' => false, 'message' => $e->errorInfo[2]]);
+            }
+    }
+
+
+
+ 
+    public function removeMedia($id){
+        
+        $idValidate= Validator::make(['mediaId'=>$id],['mediaId'=>'required|integer|exists:admin_media,id,user_id,1']);
+        
+        if($idValidate->fails()){
+            
+            return response()->json(['status'=>false,'message'=>'Media ID is not Valid'],422);
+        }
+        
+        try{
+            
+           Media::find($id)->delete();
+           
+            return response()->json(['status'=>true,'message'=>'Media Record Removed!']);
+           
+            
+        }
+        catch(\Throwable $th){
+            
+            
+            return response()->json(['status'=>false,'message'=>'Fails to Remove Media'],500);
+        }
+        
+    }
+    
+
 
 
 
@@ -407,11 +576,19 @@ class AdminMedia extends Controller
            
             }
             else{
+                
+            
+                $sn =$season;
+                $season =\App\Models\SeriesSeason::where('season',$season)->where('series_id',$seriesID)->value('id');
+                if(!$season) return response()->json(['status'=>false,'message'=>"Season $sn Not Found"]);
+            
+            
             
             $seasons = Media::whereHas('filterSeries',function($media) use($seriesID,$season,$episode,$cateID,$title){
                // if($typeID) $media->where('media_filter.media_type_id',$typeID);
                 //if($cateID ) $media->where('media_filter.admin_media_category_id',$cateID);
-                if($season) $season =\App\Models\SeriesSeason::where('season',$season)->where('series_id',$seriesID)->value('id');
+                //if($season) $season =\App\Models\SeriesSeason::where('season',$season)->where('series_id',$seriesID)->value('id');
+
                 ($season)?$media->where('series_media.season',$season):$media->where('series_media.episode',1);
                 if($seriesID) $media->where('series_media.series_id',$seriesID);
                 if($episode) $media->where('series_media.episode',$episode);

@@ -28,6 +28,8 @@ Route::get('fetch/{ownerId}/media/like/by/{clientId?}', [App\Http\Controllers\Sa
 Route::get('fetch/{ownerId}/media/like/{clientId?}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'fetchAllMediaILike']);
 Route::get('get/media/info/{mediaId}', [App\Http\Controllers\Sarealtv\ClientMediaController::class, 'getMediaById']);
 Route::get('admin/trailer', [App\Http\Controllers\Api\AdminMedia::class, 'getNewTrailer']);
+Route::get('series/details/{seriesID}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeasons']);
+
 
 Route::post('email/{type}',[App\Http\Controllers\Api\AdminController::class,'emailVerify']);
 
@@ -115,6 +117,12 @@ Route::middleware('AdminOrClient')->group(function () {
         Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');
         Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
         Route::post('admin/add/media/{seriesID?}', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
+        
+        
+        Route::post('admin/update/media/{mediaID}', [App\Http\Controllers\Api\AdminMedia::class, 'updateMedia']);
+        
+        Route::post('admin/remove/media/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeMedia']);
+        
         Route::post('admin/add/series', [App\Http\Controllers\Api\AdminMedia::class, 'addSeries']);
         Route::get('admin/fetch/series', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeries']);
         Route::post('admin/add/season', [App\Http\Controllers\Api\AdminMedia::class, 'addSeriesSeason']);
