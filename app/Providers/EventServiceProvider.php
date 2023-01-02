@@ -27,8 +27,10 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-    
-            \App\Models\Message::observe(\App\Observers\Notify::class);
+
+        \App\Models\AdminMedia::observe(\App\Observers\MediaEvent::class);
+        \App\Models\SeriesSeason::observe(\App\Observers\SeasonEvent::class);
+           // \App\Models\Message::observe(\App\Observers\Notify::class);
     
     }
 

@@ -13,7 +13,7 @@ class SeriesSeason extends Model
         "subDes",
         "des",
         "series_id",
-        "season"
+        "season","thumbs"
     ];
    
     public function Eposode(){

@@ -267,7 +267,8 @@ class AdminMedia extends Controller
             $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
             $file->storeAs("public/media/",$data['thumbs']);
             $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
-        }
+       
+    }
       
         try {
 
@@ -513,6 +514,149 @@ class AdminMedia extends Controller
           }
 
 
+
+
+          public function updateSeries(Request $req,$id){
+
+            $rules =[
+            'SeriesId'=>'required|exists:series,id',
+            'title'=>'nullable|string|unique:series,title',
+            'des'=>'nullable|string',
+            'subDes'=>'nullable|string',
+            'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
+            'type'=>'nullable|required_with:category|string',
+            'category'=>'nullable|string'];
+            $validInput = Validator::make(['SeriesId'=>$id]+$req->all(),$rules);
+            if($validInput->fails()){
+
+                return response()->json(['status'=>false,
+                'message'=>'Some fields is Not Valid','errors'=>$validInput->errors()],422);
+            }
+
+            $Series = \App\Models\Series::find($id);
+            
+            $data =array_intersect_key(array_filter($req->all()),['title'=>'','des'=>'','subDes'=>'']);
+            if ($req->hasFile('thumbs')) {
+
+                $thumbs =strchr($Series->thumbs, '/media');
+                if ($thumbs && \File::exists(storage_path("app/public$thumbs"))) {
+                     \File::delete(storage_path("app/public$thumbs"));
+                     }
+                   
+
+                $file = $req->file('thumbs');
+                $type = $file->extension();
+                $fid="f1";
+                $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+                $file->storeAs("public/media/",$data['thumbs']);
+                $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
+            }
+
+            try{
+
+                if($req->type)
+                {
+                $typeID=\App\Models\MediaType::firstOrCreate(['name'=>$req->type])->id;
+                $data['media_type_id']=$typeID;
+                }
+                if($req->category && $req->type)
+                {
+                $data['admin_media_category_id']=\App\Models\AdminMediaCategory::firstOrCreate([
+               'category'=>$req->category,
+               'media_type_id'=>$typeID
+               ])->id;
+                }
+
+                $Series->update($data);
+                return response()->json(['status'=>true,
+                'message'=>'Series Updated']);
+            }
+            catch(\Throwable $th){ 
+                return response()->json(['status'=>false,
+                'message'=>'Fails to Update Series'],500);
+             }
+
+          }
+
+        
+    public function removeSeries($id){
+        
+        $idValidate= Validator::make(['seriesId'=>$id],['seriesId'=>'required|integer|exists:series,id']);
+        
+        if($idValidate->fails()){
+            
+            return response()->json(['status'=>false,'message'=>'Media ID is not Valid'],422);
+        }
+        
+        try{
+            
+           $Series =\App\Models\Series::find($id);
+
+
+           $seriesID=$Series->id;
+           $episodesIds =\App\Models\SeriesMedia::where('series_id',$seriesID)->pluck('admin_media_id')->toArray();
+            foreach($episodesIds as $mid){
+            Media::find($mid)?->delete();
+         }
+           foreach($Series->Seasons()->get() as $season){
+
+            $season->delete();
+           }
+           $thumbs =strchr($Series->thumbs, '/media');
+           if (\File::exists(storage_path("app/public$thumbs"))) {
+                \File::delete(storage_path("app/public$thumbs"));
+                }
+           $Series->delete();
+           
+            return response()->json(['status'=>true,'message'=>'Series Record Removed!']);
+           
+            
+        }
+        catch(\Throwable $th){
+            return response()->json(['status'=>false,'message'=>'Fails to Remove Series'],500);
+           }
+        
+    }
+    
+
+
+    
+      public function removeSeason($id){
+        
+        $idValidate= Validator::make(['seasonId'=>$id],['seasonId'=>'required|integer|exists:series_seasons,id']);
+        
+        if($idValidate->fails()){
+            
+            return response()->json(['status'=>false,'message'=>'Media ID is not Valid'],422);
+        }
+        
+        try{
+            
+           $Season =\App\Models\SeriesSeason::find($id);
+           $seriesID=$Series->series_id;
+           $episodesIds =\App\Models\SeriesMedia::where('series_id',$seriesID)->where('season_id',$Season->id)->pluck('admin_media_id')->toArray();
+            foreach($episodesIds as $mid){
+            Media::find($mid)?->delete();
+         }
+
+           $thumbs =strchr($Season->thumbs, '/media');
+           if (\File::exists(storage_path("app/public$thumbs"))) {
+                \File::delete(storage_path("app/public$thumbs"));
+                }
+           $Season->delete();
+           
+            return response()->json(['status'=>true,'message'=>'Season Record Removed!']);
+           
+            
+        }
+        catch(\Throwable $th){
+            return response()->json(['status'=>false,'message'=>'Fails to Remove Season'],500);
+           }
+        
+    }
+
+
+
           public function addSeriesSeason(Request $req){
 
             $rules =['title'=>'required|string|unique:series_seasons,title',
@@ -555,6 +699,54 @@ class AdminMedia extends Controller
 
           }
 
+        
+          
+          
+        public function updateSeason(Request $req,$id){
+
+            $rules =[
+            'seasonId'=>'required|integer|exists:series_seasons,id',
+            'title'=>'nullable|string|unique:series_seasons,title',
+            'des'=>'nullable|string',
+            'subDes'=>'nullable|string',
+            'thumbs' => 'nullable|mimes:jpeg,jpg,gif,png',
+            'series_id'=>'nullable|integer|exists:series,id',
+            'season'=>'nullable|integer'];
+            $validInput = Validator::make(['seasonId'=>$id]+$req->all(),$rules);
+            if($validInput->fails()){
+
+                return response()->json(['status'=>false,
+                'message'=>'Some fields is Not Valid','errors'=>$validInput->errors()],422);
+            }
+            
+            $Season= \App\Models\SeriesSeason::find($id);
+
+            $data =array_intersect_key(array_filter($req->all()),['title'=>'','des'=>'','subDes'=>'','series_id'=>'','season'=>'']);
+            if ($req->hasFile('thumbs')) {
+                
+                $file = $req->file('thumbs');
+                $type = $file->extension();
+                $fid="f1";
+                $data['thumbs'] = bin2hex($fid)."_".uniqid() . '_media' . time() . '.' . $type;
+                $file->storeAs("public/media/",$data['thumbs']);
+                $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
+            }
+
+            try{
+                $Season->update($data);
+                return response()->json(['status'=>true,
+                'message'=>'Season Updated']);
+            }
+            catch(\Throwable $e){ 
+                $errorCode = $e->errorInfo[1];
+                if ($errorCode == 1062)
+                return response()->json(['status' =>false, 'message' =>"Season {$req->season} Allready Exists"]);
+
+                return response()->json(['status'=>false,
+                'message'=>'Fails to Update Season'],500);
+             }
+
+          }
 
           public function fetchSeries(Request $req){
 
@@ -562,6 +754,18 @@ class AdminMedia extends Controller
 
             return response()->json(['status'=>true,
             'message'=>"{count($series)} Series In Page",'series'=> $series]);
+          
+          }
+
+          public function getSeries($id){
+
+            $series =\App\Models\Series::find(intval($id));
+            if(!$series)   return response()->json(['status'=>false,
+            'message'=>"May be Series Id Not Valid"]);
+
+
+            return response()->json(['status'=>true,
+            'message'=>"Series details",'series'=> $series]);
           
           }
 

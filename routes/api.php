@@ -124,9 +124,19 @@ Route::middleware('AdminOrClient')->group(function () {
         Route::post('admin/remove/media/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeMedia']);
         
         Route::post('admin/add/series', [App\Http\Controllers\Api\AdminMedia::class, 'addSeries']);
+        Route::post('admin/update/series/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'updateSeries']);
+        Route::post('admin/remove/series/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeSeries']);
+       
         Route::get('admin/fetch/series', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeries']);
+        Route::get('admin/get/series/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'getSeries']);
+       
+
         Route::post('admin/add/season', [App\Http\Controllers\Api\AdminMedia::class, 'addSeriesSeason']);
-        });
+    
+        Route::post('admin/remove/season/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeSeason']);
+        Route::post('admin/update/season/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'updateSeason']);
+      
+    });
 
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
