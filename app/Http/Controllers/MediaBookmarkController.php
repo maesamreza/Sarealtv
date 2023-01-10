@@ -74,7 +74,7 @@ class MediaBookmarkController extends Controller
 
         try {
             $ListNames = \App\Models\BookmarkList::select('bookmark_lists.id', 'bookmark_lists.title', 'bookmark_lists.des','bookmark_lists.type')
-        ->selectRaw("admin_media.thumbs AS thumbs1,client_media.thumbs AS thumbs2")
+        ->selectRaw("CASE WHEN media_bookmarks.client_media_id IS NULL THEN admin_media.thumbs ELSE client_media.thumbs END AS thumbs")
         ->leftJoin('media_bookmarks',function($Q){
             $Q->on('bookmark_lists.id','media_bookmarks.bookmark_list_id');
             $Q->where('media_bookmarks.created_at', '=', \DB::raw("(SELECT max(media_bookmarks.created_at) from media_bookmarks WHERE media_bookmarks.bookmark_list_id=bookmark_lists.id)")); })
