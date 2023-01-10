@@ -732,10 +732,12 @@ class AdminMedia extends Controller
                 $data['thumbs']= request()->getSchemeAndHttpHost().'/storage/media/'.$data['thumbs'];
             }
 
-            try{
+    try{
                 $Season->update($data);
                 return response()->json(['status'=>true,
                 'message'=>'Season Updated']);
+          
+                
             }
             catch(\Throwable $e){ 
                 $errorCode = $e->errorInfo[1];

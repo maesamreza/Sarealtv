@@ -60,7 +60,7 @@ class MediaBookmarkController extends Controller
 
         $rules = [
             'listId' => "required|string|in:private,public,all"
-            
+
         ];
         ($type !='all')?$rules['checkType']="required|integer|exists:bookmark_lists,client_id,type,$type":
         $rules['checkType']="required|integer|exists:bookmark_lists,client_id";
@@ -73,10 +73,15 @@ class MediaBookmarkController extends Controller
 
 
         try {
-            $ListNames = \App\Models\BookmarkList::select('id', 'title', 'des','type')
-            ->where('client_id',$clientId);
-    
-            ($type !='all')?  $ListNames =$ListNames->where('type',$type)->get(): $ListNames =$ListNames->get();
+            $ListNames = \App\Models\BookmarkList::select('bookmark_lists.id', 'bookmark_lists.title', 'bookmark_lists.des','bookmark_lists.type')
+        ->selectRaw("admin_media.thumbs AS thumbs1,client_media.thumbs AS thumbs2")
+        ->leftJoin('media_bookmarks',function($Q){
+            $Q->on('bookmark_lists.id','media_bookmarks.bookmark_list_id');
+            $Q->where('media_bookmarks.created_at', '=', \DB::raw("(SELECT max(media_bookmarks.created_at) from media_bookmarks WHERE media_bookmarks.bookmark_list_id=bookmark_lists.id)")); })
+        ->leftJoin('client_media','media_bookmarks.client_media_id','client_media.id')
+        ->leftJoin('admin_media','media_bookmarks.admin_media_id','admin_media.id')
+        ->where('bookmark_lists.client_id',$clientId);
+            ($type !='all')?  $ListNames =$ListNames->where('bookmark_lists.type',$type)->get(): $ListNames =$ListNames->get();
             return response()->json([
                 'status' => true,
                 'message' => 'List Names', 'list_name' => $ListNames
@@ -96,13 +101,13 @@ class MediaBookmarkController extends Controller
             'id' => 'required|integer|exists:client_media,id',
             'checkList' => ["required",'integer',Rule::unique('media_bookmarks','client_media_id')
             ->where('bookmark_list_id',$listId)->where('client_id',$user->id)
-            ->where('owner_id',($adminMedia)?\App\Models\AdminMedia::find($mediaId)->value('user_id'): 
+            ->where('owner_id',($adminMedia)?\App\Models\AdminMedia::find($mediaId)->value('user_id'):
             \App\Models\ClientMedia::find($mediaId)->value('client_id'))]
         ];
 
-       
+
            if($adminMedia) $rules['id'] = 'required|integer|exists:admin_media,id';
-           
+
         $checkInputs = Validator::make(['id' => $mediaId,
         'checkList' =>$mediaId,
         'listId'=>$listId], $rules, [
@@ -114,7 +119,7 @@ class MediaBookmarkController extends Controller
         ], 422);
 
 
-      
+
         try {
 
             $media = ($adminMedia)?\App\Models\AdminMedia::select('id', 'user_id as client_id')->find($mediaId): \App\Models\ClientMedia::select('id', 'client_id')->find($mediaId);
@@ -230,10 +235,10 @@ class MediaBookmarkController extends Controller
 
         try {
             $mediaList = $user->MediaList($listId,$channel)->select('id', 'thumbs', 'des','title')->get();
-           
+
             $AdminMediaList = $user->AdminMediaList($listId,$channel)->select('id', 'thumbs', 'des','title')->get();
             //return ['client'=>$mediaList,'admin'=>$AdminMediaList];
-           // $mediaList = $mediaList->merge($AdminMediaList);
+            // $mediaList = $mediaList->merge($AdminMediaList);
             return response()->json([
                 'status' => true,
                 'message' => 'Media List', 'media_list' =>['client'=>$mediaList,'admin'=>$AdminMediaList],

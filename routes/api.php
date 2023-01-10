@@ -56,7 +56,7 @@ Route::middleware('AdminOrClient')->group(function () {
     Route::get('media/count/like/{mediaId}', [App\Http\Controllers\Sarealtv\MediaLikes::class, 'getLikes']);
     Route::get('admin/media/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class, 'like']);
     Route::get('admin/media/count/like/{mediaId}', [App\Http\Controllers\Api\AdminMediaLikes::class,'getLikes']);
-    
+
 
     Route::post('media/add/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'addComment']);
     Route::delete('media/remove/comments/{id}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'removeComment']);
@@ -81,12 +81,12 @@ Route::middleware('AdminOrClient')->group(function () {
     // media List Bookmarks
     Route::post('list/add', [App\Http\Controllers\MediaBookmarkController::class, 'CreateList']);
     Route::post('list/remove/{listId}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveList']);
-   
+
     Route::post('media/list/add/{mediaId}/{listId}/{adminMedia?}', [App\Http\Controllers\MediaBookmarkController::class, 'AddToList']);
     Route::post('media/list/remove/{mediaId}/{listId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'RemoveFromList']);
     Route::get('media/list/fetch/{listId}/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'getList']);
     Route::get('{type}/list/fetch/{clientId?}', [App\Http\Controllers\MediaBookmarkController::class, 'fetchListNames']);
-    
+
     //<--end-->
 
 
@@ -100,47 +100,47 @@ Route::middleware('AdminOrClient')->group(function () {
 
 
 
-        
+
     Route::get('get/notifications', [\App\Http\Controllers\Notification::class,'allNoti']);
     Route::post('remove/notifications/{id}', [\App\Http\Controllers\Notification::class, 'RemoveNoti']);
     Route::post('clear/notifications', [\App\Http\Controllers\Notification::class, 'allRemoveNoti']);
- 
+
 
     Route::post('admin/media/add/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'addComment']);
     Route::delete('admin/media/remove/comments/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
     Route::post('admin/media/add/comment/replay/{commentId}', [\App\Http\Controllers\Api\MediaComments::class, 'addCommentReplay']);
     Route::delete('admin/media/remove/comment/replay/{id}', [\App\Http\Controllers\Api\MediaComments::class, 'removeComment']);
     Route::get('admin/fetch/season/{seriesID}/{season?}/{episode?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeasons']);
-    
+
     Route::middleware('Admin')->group(function () {
         Route::get('list/client', [ClientController::class, 'ClientList']);
         Route::post('profile/{status}/{id:users}', [ClientController::class, 'setActive'])->name('client.active');
         Route::post('remove/client/profile/{id:users}', [ClientController::class, 'removeClient'])->name('client.remove');
         Route::post('admin/add/media/{seriesID?}', [App\Http\Controllers\Api\AdminMedia::class, 'addMedia']);
-        
-        
+
+
         Route::post('admin/update/media/{mediaID}', [App\Http\Controllers\Api\AdminMedia::class, 'updateMedia']);
-        
+
         Route::post('admin/remove/media/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeMedia']);
-        
+
         Route::post('admin/add/series', [App\Http\Controllers\Api\AdminMedia::class, 'addSeries']);
         Route::post('admin/update/series/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'updateSeries']);
         Route::post('admin/remove/series/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeSeries']);
-       
+
         Route::get('admin/fetch/series', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeries']);
         Route::get('admin/get/series/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'getSeries']);
-       
+
 
         Route::post('admin/add/season', [App\Http\Controllers\Api\AdminMedia::class, 'addSeriesSeason']);
-    
+
         Route::post('admin/remove/season/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'removeSeason']);
         Route::post('admin/update/season/{id}', [App\Http\Controllers\Api\AdminMedia::class, 'updateSeason']);
-      
+
     });
 
 });
 Route::group(['prefix' => 'client', 'middleware' => ['auth:client-api', 'scopes:client']], function () {
-    // authenticated staff routes here 
+    // authenticated staff routes here
     Route::get('dashboard', [ClientController::class, 'ClientDashboard']);
 });
 
@@ -151,7 +151,7 @@ Route::post('client/register', [ClientController::class, 'register'])->name('Cli
 Route::post('admin/login', [adminController::class, 'login'])->name('adminLogin');
 
 Route::group(['prefix' => 'admin', 'middleware' => ['Admin']], function () {
-    // authenticated staff routes here 
+    // authenticated staff routes here
     Route::post('/update/profile', [adminController::class, 'updateProfile'])->name('admin.update');
     //Route::get('dashboard', [adminController::class, 'adminDashboard']);
 });
