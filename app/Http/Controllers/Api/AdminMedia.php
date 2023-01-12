@@ -228,9 +228,9 @@ class AdminMedia extends Controller
             $rule['duration'] = "required|integer $maxDur";
 
             $data['duration'] = $req->duration;
-        } else {
+          } else {
             $rule['media'] = $rule['media'].$maxSize;
-        }
+          }
 
         $checkValid = Validator::make(array_merge($req->all(),['mediaId'=>$mediaID] ), $rule, [
             'series_id.unique' => 'This Episode Allready Exists']);
@@ -324,6 +324,28 @@ class AdminMedia extends Controller
     }
 
 
+
+
+
+
+    public function searchAllMedia($search){
+
+
+         $clientMedia = Media::whereHas('filterMedia')->select('admin_media.*','media_types.name as category','admin_media_categories.category as subCategory'
+         ,'media_filter.season','media_filter.episode')
+         //->where('title','LIKE',"%%$search%%")
+         ->leftjoin('media_filter','admin_media.id','media_filter.admin_media_id')
+         ->leftjoin('media_types','media_filter.media_type_id','media_types.id')
+         ->leftjoin('admin_media_categories','media_filter.admin_media_category_id','admin_media_categories.id')
+         ->selectRaw('DATE_FORMAT(admin_media.updated_at, "%d %b %y") as date')
+         ->search($search)
+         ->withCount('comments','likes')
+         ->paginate(15);
+
+
+      return response()->json(['status'=>true,'message'=>$clientMedia->count().' media found','media'=>$clientMedia]);
+
+       }
 
 
 

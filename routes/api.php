@@ -39,6 +39,9 @@ Route::get('/search/user/{searchKey}', [adminController::class, 'findAccountByKe
 Route::get('series/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchSeriesPage']);
 
 Route::get('fetch/{type}/{cate?}', [App\Http\Controllers\Api\AdminMedia::class, 'fetchAllMedia']);
+
+Route::get('search/media/{search}', [App\Http\Controllers\Api\AdminMedia::class, 'searchAllMedia']);
+
 Route::get('admin/get/media/{MediaId}', [App\Http\Controllers\Api\AdminMedia::class, 'getMediaById']);
 Route::get('media/get/comments/{mediaId}', [App\Http\Controllers\Sarealtv\MediaComments::class, 'fetchComments']);
 Route::get('admin/media/get/comments/{mediaId}', [\App\Http\Controllers\Api\MediaComments::class, 'fetchComments']);
