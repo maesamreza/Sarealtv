@@ -883,7 +883,9 @@ class AdminMedia extends Controller
                         }
                     }
                     else{
-                        $cate =\App\Models\AdminMediaCategory::where('media_type_id',$typeID)->where('category',$cate)->first();
+                        $cate =(preg_match('/[0-9]/',$cate) && intval($cate))?
+                        \App\Models\AdminMediaCategory::where('media_type_id',$typeID)->where('id',intval($cate))->first():
+                        \App\Models\AdminMediaCategory::where('media_type_id',$typeID)->where('category',$cate)->first();
 
                         $name =$cate->category;
                         $series =\App\Models\Series::where('admin_media_category_id',$cate->id)->select('series.*')
